@@ -1089,18 +1089,83 @@
     }
 
     .seg-index {
-      width: 23px;
-      height: 23px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background: var(--primary);
       color: #fff;
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       font-weight: 800;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
+
+    .seg-index.is-generating {
+      background: var(--warning);
+      color: #fff;
+      animation: segIndexPulse 1.2s ease-in-out infinite;
+    }
+
+    .seg-index.is-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .seg-index.is-error {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .seg-index.is-stale {
+      background: var(--warning);
+      color: #fff;
+      box-shadow: 0 0 0 2px var(--warning-soft);
+    }
+
+    [data-theme="dark"] .seg-index.is-generating,
+    [data-theme="dark"] .seg-index.is-stale {
+      color: #3b2503;
+    }
+
+    [data-theme="dark"] .seg-index.is-success {
+      color: #052e16;
+    }
+
+    [data-theme="dark"] .seg-index.is-error {
+      color: #3b0505;
+    }
+
+    @keyframes segIndexPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--warning-soft); }
+      50% { transform: scale(1.08); box-shadow: 0 0 0 4px transparent; }
+    }
+
+    .seg-tag-count-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.69rem;
+      font-weight: 800;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .seg-status-line {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .seg-status-line-error { color: var(--danger); }
+    .seg-status-line-warning { color: var(--warning); }
 
     .char-voice-chip {
       display: inline-flex;
@@ -1301,6 +1366,211 @@
       flex: 1;
       height: 32px;
       min-width: 0;
+    }
+
+    /* مشغل صوت مخصص (شريط تقدم + أزرار 10 ثوانٍ + سرعة ×2 + تنزيل) */
+    .cap-player {
+      margin-top: 0.55rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 0.5rem 0.55rem 0.4rem;
+      direction: ltr;
+    }
+
+    .cap-audio {
+      display: none;
+    }
+
+    .cap-seek-row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .cap-seek-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .cap-seek-bar {
+      position: relative;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      --cap-progress: 0%;
+    }
+
+    .cap-seek-bar::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--border-color);
+    }
+
+    .cap-seek-fill {
+      position: absolute;
+      left: 0;
+      height: 4px;
+      width: var(--cap-progress);
+      border-radius: 999px;
+      background: var(--accent);
+      pointer-events: none;
+    }
+
+    .cap-seek-thumb {
+      position: absolute;
+      left: var(--cap-progress);
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .cap-seek {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .cap-times {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      direction: ltr;
+      padding: 0 1px;
+    }
+
+    .cap-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.15rem;
+      margin-top: 0.35rem;
+    }
+
+    .cap-play {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--primary-soft);
+      transition: background 0.18s ease, transform 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    .cap-play:hover {
+      background: var(--primary-hover);
+      transform: scale(1.04);
+    }
+
+    .cap-play svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .cap-skip {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    .cap-skip:hover {
+      background: var(--bg-surface-2);
+      color: var(--accent);
+    }
+
+    .cap-skip svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .cap-download {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface-2);
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      text-decoration: none;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .cap-download:hover {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .cap-download svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .cap-speed {
+      min-width: 38px;
+      height: 28px;
+      padding: 0 0.4rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface-2);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.7rem;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .cap-speed:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .cap-speed.is-active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     .status-pill {
@@ -1962,12 +2232,7 @@
           </div>
         </div>
 
-        <div id="mergedResultContainer" class="hidden" style="margin-top:0.65rem; background:var(--bg-surface); padding:0.5rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-          <div style="display:flex; align-items:center; gap:0.45rem;">
-            <audio id="mergedAudioPlayer" controls style="flex:1; height:34px;"></audio>
-            <a id="downloadMergedWavLink" class="btn btn-sm btn-primary" download="story.wav" title="تنزيل الملف المدمج">⬇️ تنزيل</a>
-          </div>
-        </div>
+        <div id="mergedResultContainer" class="hidden" style="margin-top:0.65rem;"></div>
       </div>
     </section>
   </main>
@@ -6359,6 +6624,197 @@ Return ONLY valid JSON matching the schema.`;
       }
     }
 
+    const CAP_ICONS = {
+      download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+      play: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20"/></svg>`,
+      pause: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`,
+      rewind10: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.2" text-anchor="middle" font-size="6.6" font-weight="800" fill="currentColor" stroke="none">10</text></svg>`,
+      forward10: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(24 0) scale(-1 1)"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></g><text x="12" y="15.2" text-anchor="middle" font-size="6.6" font-weight="800" fill="currentColor" stroke="none">10</text></svg>`
+    };
+
+    function buildCustomAudioPlayerHtml(opts = {}) {
+      const {
+        rootId = '',
+        audioId = '',
+        src = '',
+        downloadHref = '#',
+        downloadName = '',
+        downloadTitle = 'تنزيل الصوت',
+        downloadAria = 'تنزيل الصوت',
+        dataSegAudio = '',
+        audioMode = ''
+      } = opts;
+      return `
+        <div class="cap-player"${rootId ? ` id="${escapeHtml(rootId)}"` : ''}${dataSegAudio ? ` data-seg-audio="${escapeHtml(dataSegAudio)}"` : ''}${audioMode ? ` data-audio-mode="${escapeHtml(audioMode)}"` : ''}>
+          <audio${audioId ? ` id="${escapeHtml(audioId)}"` : ''} class="cap-audio"${src ? ` src="${escapeHtml(src)}"` : ''} preload="metadata"></audio>
+          <div class="cap-seek-row">
+            <a class="cap-download" href="${escapeHtml(downloadHref)}"${downloadName ? ` download="${escapeHtml(downloadName)}"` : ''} title="${escapeHtml(downloadTitle)}" aria-label="${escapeHtml(downloadAria)}">
+              ${CAP_ICONS.download}
+            </a>
+            <div class="cap-seek-wrap">
+              <div class="cap-seek-bar">
+                <div class="cap-seek-fill"></div>
+                <div class="cap-seek-thumb"></div>
+                <input type="range" class="cap-seek" min="0" max="1000" value="0" step="1" aria-label="موضع التشغيل" />
+              </div>
+              <div class="cap-times">
+                <span class="cap-time-current">00:00</span>
+                <span class="cap-time-duration">00:00</span>
+              </div>
+            </div>
+            <button type="button" class="cap-speed" title="تشغيل سريع ×2" aria-label="تشغيل سريع ×2" aria-pressed="false">×2</button>
+          </div>
+          <div class="cap-controls">
+            <button type="button" class="cap-skip" data-skip="-10" title="إرجاع 10 ثوانٍ" aria-label="إرجاع 10 ثوانٍ">${CAP_ICONS.rewind10}</button>
+            <button type="button" class="cap-play" title="تشغيل" aria-label="تشغيل">
+              <span class="cap-play-icon">${CAP_ICONS.play}</span>
+              <span class="cap-pause-icon hidden">${CAP_ICONS.pause}</span>
+            </button>
+            <button type="button" class="cap-skip" data-skip="10" title="تقديم 10 ثوانٍ" aria-label="تقديم 10 ثوانٍ">${CAP_ICONS.forward10}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function formatPlayerTime(seconds) {
+      const total = Math.max(0, Math.floor(Number(seconds) || 0));
+      const m = Math.floor(total / 60);
+      const s = total % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateCustomPlayerProgress(root) {
+      const audio = root.querySelector('audio.cap-audio');
+      const seek = root.querySelector('.cap-seek');
+      if (!audio || !seek) return;
+      const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+      const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+      const pct = duration > 0 ? Math.min(100, Math.max(0, (current / duration) * 100)) : 0;
+      if (root.dataset.capSeeking !== '1') {
+        seek.value = String(Math.round(pct * 10));
+      }
+      const bar = root.querySelector('.cap-seek-bar');
+      if (bar) bar.style.setProperty('--cap-progress', pct + '%');
+      const currentEl = root.querySelector('.cap-time-current');
+      const durationEl = root.querySelector('.cap-time-duration');
+      if (currentEl) currentEl.textContent = formatPlayerTime(current);
+      if (durationEl) durationEl.textContent = formatPlayerTime(duration);
+    }
+
+    function setCustomPlayerPlayIcon(root, isPlaying) {
+      const playIcon = root.querySelector('.cap-play-icon');
+      const pauseIcon = root.querySelector('.cap-pause-icon');
+      const btn = root.querySelector('.cap-play');
+      if (playIcon) playIcon.classList.toggle('hidden', isPlaying);
+      if (pauseIcon) pauseIcon.classList.toggle('hidden', !isPlaying);
+      if (btn) {
+        btn.setAttribute('aria-label', isPlaying ? 'إيقاف مؤقت' : 'تشغيل');
+        btn.setAttribute('title', isPlaying ? 'إيقاف مؤقت' : 'تشغيل');
+      }
+    }
+
+    function setCustomPlayerRate(root, rate) {
+      const audio = root.querySelector('audio.cap-audio');
+      const speedBtn = root.querySelector('.cap-speed');
+      if (audio) audio.playbackRate = rate;
+      if (speedBtn) {
+        const active = rate === 2;
+        speedBtn.classList.toggle('is-active', active);
+        speedBtn.setAttribute('aria-pressed', String(active));
+        speedBtn.title = active ? 'سرعة عادية ×1' : 'تشغيل سريع ×2';
+      }
+    }
+
+    function initCustomAudioPlayer(root) {
+      if (!root || root.dataset.capReady === '1') return;
+      const audio = root.querySelector('audio.cap-audio');
+      if (!audio) return;
+      root.dataset.capReady = '1';
+
+      const seek = root.querySelector('.cap-seek');
+      const playBtn = root.querySelector('.cap-play');
+      const speedBtn = root.querySelector('.cap-speed');
+      const sync = () => updateCustomPlayerProgress(root);
+
+      audio.addEventListener('loadedmetadata', sync);
+      audio.addEventListener('durationchange', sync);
+      audio.addEventListener('timeupdate', sync);
+      audio.addEventListener('progress', sync);
+      audio.addEventListener('play', () => setCustomPlayerPlayIcon(root, true));
+      audio.addEventListener('pause', () => setCustomPlayerPlayIcon(root, false));
+      audio.addEventListener('ended', () => {
+        setCustomPlayerPlayIcon(root, false);
+        updateCustomPlayerProgress(root);
+      });
+      audio.addEventListener('loadstart', () => {
+        audio.playbackRate = 1;
+        if (speedBtn) {
+          speedBtn.classList.remove('is-active');
+          speedBtn.setAttribute('aria-pressed', 'false');
+        }
+        sync();
+      });
+
+      if (playBtn) {
+        playBtn.addEventListener('click', () => {
+          if (audio.paused) {
+            const result = audio.play();
+            if (result && typeof result.catch === 'function') result.catch(() => {});
+          } else {
+            audio.pause();
+          }
+        });
+      }
+
+      root.querySelectorAll('.cap-skip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const delta = Number(btn.getAttribute('data-skip')) || 0;
+          const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+          const upper = duration > 0 ? duration : Number.MAX_SAFE_INTEGER;
+          audio.currentTime = Math.max(0, Math.min(upper, audio.currentTime + delta));
+          updateCustomPlayerProgress(root);
+        });
+      });
+
+      if (seek) {
+        const startSeek = () => { root.dataset.capSeeking = '1'; };
+        const endSeek = () => {
+          delete root.dataset.capSeeking;
+          updateCustomPlayerProgress(root);
+        };
+        seek.addEventListener('pointerdown', startSeek);
+        seek.addEventListener('touchstart', startSeek, { passive: true });
+        seek.addEventListener('input', () => {
+          const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+          if (duration <= 0) return;
+          const pct = Math.max(0, Math.min(100, Number(seek.value) / 10));
+          const target = (pct / 100) * duration;
+          audio.currentTime = target;
+          const bar = root.querySelector('.cap-seek-bar');
+          if (bar) bar.style.setProperty('--cap-progress', pct + '%');
+          const currentEl = root.querySelector('.cap-time-current');
+          if (currentEl) currentEl.textContent = formatPlayerTime(target);
+        });
+        seek.addEventListener('change', endSeek);
+        seek.addEventListener('pointerup', endSeek);
+        seek.addEventListener('touchend', endSeek);
+        seek.addEventListener('blur', endSeek);
+      }
+
+      if (speedBtn) {
+        speedBtn.addEventListener('click', () => {
+          const nextRate = audio.playbackRate === 2 ? 1 : 2;
+          setCustomPlayerRate(root, nextRate);
+        });
+      }
+
+      sync();
+    }
+
+    function initCustomAudioPlayers(scope = document) {
+      scope.querySelectorAll('.cap-player').forEach(initCustomAudioPlayer);
+    }
+
     function renderSegmentAudioBarHtml(seg) {
       const idx = state.segments.findIndex(x => x.id === seg.id);
       const auto = state.settings.mp3Mode === 'auto';
@@ -6366,18 +6822,43 @@ Return ONLY valid JSON matching the schema.`;
       const srcUrl = useMp3 ? seg.mp3Url : seg.audioUrl;
       if (!srcUrl) return '';
       const ext = useMp3 ? 'mp3' : 'wav';
-      return `
-        <div class="seg-audio-bar" id="audiobar_${escapeHtml(seg.id)}" data-audio-mode="${ext}">
-          <audio controls src="${srcUrl}"></audio>
-          <a class="btn btn-sm btn-primary" href="${srcUrl}" download="segment_${idx + 1}.${ext}" title="تنزيل المقطع الصوتي (${ext.toUpperCase()})" aria-label="تنزيل المقطع ${idx + 1}">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          </a>
-        </div>
-      `;
+      return buildCustomAudioPlayerHtml({
+        src: srcUrl,
+        downloadHref: srcUrl,
+        downloadName: `segment_${idx + 1}.${ext}`,
+        downloadTitle: `تنزيل المقطع الصوتي (${ext.toUpperCase()})`,
+        downloadAria: `تنزيل المقطع ${idx + 1}`,
+        dataSegAudio: seg.id,
+        audioMode: ext
+      });
+    }
+
+    function getSegmentStatusInfo(seg) {
+      const isGenerating = seg.status === 'generating';
+      const isQueued = seg.status === 'queued';
+      const isStale = Boolean(seg.wavBlob && seg.generatedSig && seg.generatedSig !== getSegmentSignature(seg));
+      if (isGenerating || isQueued) {
+        return { cls: 'is-generating', label: isQueued ? 'في الانتظار' : 'قيد التوليد' };
+      }
+      if (seg.status === 'error') {
+        return { cls: 'is-error', label: 'فشل التوليد' };
+      }
+      if (isStale) {
+        return { cls: 'is-stale', label: 'قديم — أعد التوليد' };
+      }
+      if (seg.status === 'ready' && seg.wavBlob) {
+        return { cls: 'is-success', label: 'تم التوليد' };
+      }
+      return { cls: 'is-idle', label: 'لم يُولَّد بعد' };
+    }
+
+    function formatArabicTagCount(n) {
+      const count = Math.max(0, Number(n) || 0);
+      if (count === 0) return '0 وسوم';
+      if (count === 1) return 'وسم واحد';
+      if (count === 2) return 'وسمان';
+      if (count >= 3 && count <= 10) return `${count} وسوم`;
+      return `${count} وسم`;
     }
 
     function buildSegmentCardInnerHtml(seg, idx) {
@@ -6386,7 +6867,7 @@ Return ONLY valid JSON matching the schema.`;
       const isGenerating = seg.status === 'generating';
       const isQueued = seg.status === 'queued';
       const segTagsCount = countInlineTags(seg.text);
-      const effectiveStyle = state.lockMasterStyle ? (state.masterStyleEnglish || '') : (seg.style || '');
+      const statusInfo = getSegmentStatusInfo(seg);
 
       let voiceSelectorsHtml = '';
       if (seg.isTwoSpeaker) {
@@ -6418,39 +6899,20 @@ Return ONLY valid JSON matching the schema.`;
         `;
       }
 
-      const quickBarHtml = `
-        <div class="seg-quick-bar">
-          <div style="display:inline-flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
-            <span class="seg-tag-badge">🎬 ${segTagsCount} وسم</span>
-            ${effectiveStyle ? `<span class="seg-style-badge" title="${escapeHtml(effectiveStyle)}">🎼 ${escapeHtml(effectiveStyle)}</span>` : ''}
-          </div>
-          <select class="select mini-select" data-seg-action="insert-tag" data-id="${escapeHtml(seg.id)}" aria-label="إدراج وسم صوتي" ${isGenerating ? 'disabled' : ''}>
-            <option value="">+ إدراج وسم صوتي...</option>
-            ${INLINE_TAG_CATALOG.map(item => `<option value="${escapeHtml(item.tag)}">${escapeHtml(item.ar)} (${escapeHtml(item.tag)})${item.official ? '' : ' [تجريبي]'}</option>`).join('')}
-          </select>
-        </div>
-      `;
-
       let statusBadge = '';
-      if (isGenerating) {
-        const onAcc = seg.assignedAccountName ? ` على «${escapeHtml(seg.assignedAccountName)}»` : '';
-        statusBadge = `<span class="status-pill status-info">⏳ قيد التوليد${onAcc}...</span>`;
-      } else if (isQueued) {
-        statusBadge = `<span class="status-pill status-info">🕒 في الانتظار...</span>`;
-      } else if (isStale) {
-        statusBadge = `<span class="status-pill status-stale">⚠️ قديم (تم تعديل النص أو الصوت أو الأسلوب — أعد التوليد)</span>`;
-      } else if (seg.status === 'error' && seg.errorMsg) {
-        statusBadge = `<span class="status-pill status-error">❌ ${escapeHtml(seg.errorMsg)}</span>`;
-      } else if (seg.status === 'ready' && seg.wavBlob) {
-        statusBadge = `<span class="status-pill status-success">✓ جاهز</span>`;
+      if (seg.status === 'error' && seg.errorMsg) {
+        statusBadge = `<span class="seg-status-line seg-status-line-error">❌ ${escapeHtml(seg.errorMsg)}</span>`;
+      } else if (statusInfo.cls === 'is-stale') {
+        statusBadge = `<span class="seg-status-line seg-status-line-warning">⚠️ قديم — أعد التوليد</span>`;
       }
 
       return `
         <div class="segment-top">
           <div class="segment-meta">
-            <span class="seg-index">${idx + 1}</span>
+            <span class="seg-index ${statusInfo.cls}" title="${escapeHtml(statusInfo.label)}">${idx + 1}</span>
             ${voiceSelectorsHtml}
             <button type="button" class="btn btn-xs btn-accent" data-seg-action="tag-one" data-id="${escapeHtml(seg.id)}" title="يرسل هذا الصندوق فقط + ملخص القصة + تعليمات الوسوم إلى ${escapeHtml(state.settings.textModel)}" ${(isGenerating || seg.taggingBusy) ? 'disabled' : ''}>${seg.taggingBusy ? '⏳ جارٍ الوسم...' : '🎬 وسم'}</button>
+            <span class="seg-tag-count-pill" title="عدد الوسوم الصوتية في المقطع">${escapeHtml(formatArabicTagCount(segTagsCount))}</span>
           </div>
 
           <div class="card-menu-wrap">
@@ -6467,9 +6929,7 @@ Return ONLY valid JSON matching the schema.`;
           </div>
         </div>
 
-        <div class="seg-status-slot ${statusBadge ? '' : 'hidden'}" style="margin-bottom:0.42rem;">${statusBadge}</div>
-
-        ${quickBarHtml}
+        <div class="seg-status-slot ${statusBadge ? '' : 'hidden'}" style="margin-bottom:0.35rem;">${statusBadge}</div>
 
         <div class="seg-textarea-wrap">
           <div class="floating-gen-group">
@@ -6663,8 +7123,8 @@ Return ONLY valid JSON matching the schema.`;
       }
       if (seg.mp3Url && seg.mp3Blob) {
         if (auto) {
-          return `<div style="display:flex; align-items:center; gap:0.35rem; font-size:0.76rem; color:var(--success); font-weight:700;">
-            <span>✓ MP3 جاهز (${formatBytesShort(seg.mp3Blob.size)})</span>
+          return `<div style="display:flex; align-items:center; gap:0.35rem; font-size:0.74rem; color:var(--text-secondary); font-weight:700;">
+            <span>MP3 · ${formatBytesShort(seg.mp3Blob.size)}</span>
           </div>`;
         }
         return `<a class="btn btn-sm btn-primary" href="${seg.mp3Url}" download="segment_${idx + 1}.mp3">⬇ تنزيل MP3 (${formatBytesShort(seg.mp3Blob.size)})</a>`;
@@ -6688,11 +7148,39 @@ Return ONLY valid JSON matching the schema.`;
       if (el) el.innerHTML = renderMp3AreaHtml(seg);
 
       // في الوضع التلقائي: يستبدل مشغّل MP3 مشغّل WAV داخل البطاقة بعد اكتمال التحويل
-      const bar = document.getElementById('audiobar_' + id);
-      if (bar) {
+      const safeId = (window.CSS && typeof CSS.escape === 'function')
+        ? CSS.escape(id)
+        : String(id).replace(/"/g, '\\"');
+      const player = document.querySelector(`.cap-player[data-seg-audio="${safeId}"]`);
+      if (player) {
         const desiredMode = (state.settings.mp3Mode === 'auto' && seg.mp3Url && seg.mp3Blob) ? 'mp3' : 'wav';
-        if (bar.getAttribute('data-audio-mode') !== desiredMode) {
-          bar.outerHTML = renderSegmentAudioBarHtml(seg);
+        if (player.getAttribute('data-audio-mode') !== desiredMode) {
+          const oldAudio = player.querySelector('audio.cap-audio');
+          const resumeTime = oldAudio ? oldAudio.currentTime : 0;
+          const wasPlaying = oldAudio ? !oldAudio.paused : false;
+          const rate = oldAudio ? oldAudio.playbackRate : 1;
+
+          player.outerHTML = renderSegmentAudioBarHtml(seg);
+          const newPlayer = document.querySelector(`.cap-player[data-seg-audio="${safeId}"]`);
+          if (newPlayer) {
+            initCustomAudioPlayer(newPlayer);
+            const newAudio = newPlayer.querySelector('audio.cap-audio');
+            if (newAudio) {
+              const restoreState = () => {
+                if (resumeTime > 0) {
+                  const duration = Number.isFinite(newAudio.duration) ? newAudio.duration : resumeTime;
+                  newAudio.currentTime = Math.min(resumeTime, duration);
+                }
+                if (rate === 2) setCustomPlayerRate(newPlayer, 2);
+                if (wasPlaying) {
+                  const result = newAudio.play();
+                  if (result && typeof result.catch === 'function') result.catch(() => {});
+                }
+              };
+              if (newAudio.readyState >= 1) restoreState();
+              else newAudio.addEventListener('loadedmetadata', restoreState, { once: true });
+            }
+          }
         }
       }
     }
@@ -6757,6 +7245,7 @@ Return ONLY valid JSON matching the schema.`;
 
       card.className = `segment-card ${isStale ? 'is-stale' : ''} ${isGenerating ? 'is-generating' : ''} ${isQueued ? 'is-queued' : ''}`;
       card.innerHTML = buildSegmentCardInnerHtml(seg, idx);
+      initCustomAudioPlayers(card);
 
       if (focusAction) {
         const restoredEl = card.querySelector(`[data-seg-action="${focusAction}"]`);
@@ -7163,6 +7652,7 @@ Return ONLY valid JSON matching the schema.`;
         `;
       }).join('');
 
+      initCustomAudioPlayers(container);
       updateRetryFailedButtonVisibility();
       window.scrollTo(window.scrollX, scrollY);
     }
@@ -8972,17 +9462,28 @@ Return ONLY valid JSON matching the schema.`;
         }
         const card = document.getElementById(`seg_card_${id}`);
         if (card) {
-          const tagBadge = card.querySelector('.seg-tag-badge');
-          if (tagBadge) tagBadge.textContent = `🎬 ${countInlineTags(seg.text)} وسم`;
-          if (seg.wavBlob) {
-            const isStale = getSegmentSignature(seg) !== seg.generatedSig;
-            card.classList.toggle('is-stale', isStale);
-            const statusSlot = card.querySelector('.seg-status-slot');
-            if (statusSlot) {
-              statusSlot.innerHTML = isStale
-                ? `<span class="status-pill status-stale">⚠️ قديم (تم تعديل النص أو الصوت أو الأسلوب — أعد التوليد)</span>`
-                : `<span class="status-pill status-success">✓ جاهز</span>`;
+          const tagCountPill = card.querySelector('.seg-tag-count-pill');
+          if (tagCountPill) tagCountPill.textContent = formatArabicTagCount(countInlineTags(seg.text));
+
+          const statusInfo = getSegmentStatusInfo(seg);
+          const indexEl = card.querySelector('.seg-index');
+          if (indexEl) {
+            indexEl.className = `seg-index ${statusInfo.cls}`;
+            indexEl.title = statusInfo.label;
+          }
+          card.classList.toggle('is-stale', statusInfo.cls === 'is-stale');
+
+          const statusSlot = card.querySelector('.seg-status-slot');
+          if (statusSlot) {
+            if (seg.status === 'error' && seg.errorMsg) {
+              statusSlot.innerHTML = `<span class="seg-status-line seg-status-line-error">❌ ${escapeHtml(seg.errorMsg)}</span>`;
               statusSlot.classList.remove('hidden');
+            } else if (statusInfo.cls === 'is-stale') {
+              statusSlot.innerHTML = `<span class="seg-status-line seg-status-line-warning">⚠️ قديم — أعد التوليد</span>`;
+              statusSlot.classList.remove('hidden');
+            } else {
+              statusSlot.innerHTML = '';
+              statusSlot.classList.add('hidden');
             }
           }
         }
@@ -9036,6 +9537,19 @@ Return ONLY valid JSON matching the schema.`;
       document.getElementById('exportZipBtn').addEventListener('click', exportSegmentsAsZip);
 
       await restoreAutoSave();
+
+      const mergedResultContainer = document.getElementById('mergedResultContainer');
+      if (mergedResultContainer && !mergedResultContainer.querySelector('.cap-player')) {
+        mergedResultContainer.innerHTML = buildCustomAudioPlayerHtml({
+          rootId: 'mergedPlayerRoot',
+          audioId: 'mergedAudioPlayer',
+          downloadName: 'story.wav',
+          downloadTitle: 'تنزيل الملف المدمج',
+          downloadAria: 'تنزيل الملف المدمج'
+        });
+      }
+      initCustomAudioPlayer(document.getElementById('mergedPlayerRoot'));
+
       updateStoryCounters();
       await refreshHistoryBadge();
 
