@@ -1370,6 +1370,7 @@
 
     /* مشغل صوت مخصص (شريط تقدم + أزرار 10 ثوانٍ + سرعة ×2 + تنزيل) */
     .cap-player {
+      position: relative;
       margin-top: 0.55rem;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
@@ -1379,7 +1380,11 @@
     }
 
     .cap-audio {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
     }
 
     .cap-seek-row {
@@ -6815,6 +6820,28 @@ Return ONLY valid JSON matching the schema.`;
       scope.querySelectorAll('.cap-player').forEach(initCustomAudioPlayer);
     }
 
+    function ensureMergedPlayerReady() {
+      const container = document.getElementById('mergedResultContainer');
+      if (!container) return null;
+      if (!container.querySelector('.cap-player')) {
+        container.innerHTML = buildCustomAudioPlayerHtml({
+          rootId: 'mergedPlayerRoot',
+          audioId: 'mergedAudioPlayer',
+          downloadName: 'story.wav',
+          downloadTitle: 'تنزيل الملف المدمج',
+          downloadAria: 'تنزيل الملف المدمج'
+        });
+      }
+      const root = document.getElementById('mergedPlayerRoot');
+      if (root) initCustomAudioPlayer(root);
+      return {
+        container,
+        root,
+        player: document.getElementById('mergedAudioPlayer'),
+        dlLink: document.getElementById('downloadMergedWavLink')
+      };
+    }
+
     function renderSegmentAudioBarHtml(seg) {
       const idx = state.segments.findIndex(x => x.id === seg.id);
       const auto = state.settings.mp3Mode === 'auto';
@@ -6961,7 +6988,8 @@ Return ONLY valid JSON matching the schema.`;
     const MP3_SAMPLE_RATE = 44100;
     const LAME_URLS = [
       'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js',
-      'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'
+      'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
+      'https://unpkg.com/lamejs@1.2.1/lame.min.js'
     ];
     let lamePromise = null;
     let mp3QueueChain = Promise.resolve();
@@ -8350,14 +8378,19 @@ Return ONLY valid JSON matching the schema.`;
         state.mergedAudioUrl = url;
         const filename = getCleanMergedFilename(ext);
 
-        const player = document.getElementById('mergedAudioPlayer');
-        const dlLink = document.getElementById('downloadMergedWavLink');
+        const mergedUi = ensureMergedPlayerReady();
+        if (!mergedUi || !mergedUi.player || !mergedUi.dlLink) {
+          throw new Error('تعذر تهيئة مشغل ملف الدمج. أعد تحميل الصفحة ثم حاول مرة أخرى.');
+        }
+        const player = mergedUi.player;
+        const dlLink = mergedUi.dlLink;
         player.src = url;
         dlLink.href = url;
         dlLink.download = filename;
         const extLabel = document.getElementById('mergedFilenameExtLabel');
         if (extLabel) extLabel.textContent = '.' + ext;
-        document.getElementById('mergedResultContainer').classList.remove('hidden');
+        mergedUi.container.classList.remove('hidden');
+        try { mergedUi.container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
 
         showToast(`تم دمج ${readySegments.length} مقاطع بجودة ${isMp3 ? 'MP3 192kbps' : 'WAV 24kHz Mono'} في ${filename}`, 'success');
       } catch (err) {
@@ -9538,17 +9571,7 @@ Return ONLY valid JSON matching the schema.`;
 
       await restoreAutoSave();
 
-      const mergedResultContainer = document.getElementById('mergedResultContainer');
-      if (mergedResultContainer && !mergedResultContainer.querySelector('.cap-player')) {
-        mergedResultContainer.innerHTML = buildCustomAudioPlayerHtml({
-          rootId: 'mergedPlayerRoot',
-          audioId: 'mergedAudioPlayer',
-          downloadName: 'story.wav',
-          downloadTitle: 'تنزيل الملف المدمج',
-          downloadAria: 'تنزيل الملف المدمج'
-        });
-      }
-      initCustomAudioPlayer(document.getElementById('mergedPlayerRoot'));
+      ensureMergedPlayerReady();
 
       updateStoryCounters();
       await refreshHistoryBadge();
