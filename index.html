@@ -1602,6 +1602,47 @@
       border: 1px solid var(--border-color);
     }
 
+    /* رأس نتيجة الدمج — بنفس هوية بطاقات الأصوات */
+    .merged-result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      padding: 0.5rem 0.6rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 0.45rem;
+    }
+
+    .merged-result-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .merged-result-meta {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      direction: ltr;
+    }
+
+    .merged-result-file {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      direction: ltr;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .export-actions {
       display: flex;
       flex-wrap: wrap;
@@ -2339,10 +2380,10 @@
       <div class="setting-row">
         <label class="setting-label" for="settingMp3Mode">🗜️ تحويل الصوت إلى MP3</label>
         <select id="settingMp3Mode" class="select">
-          <option value="manual">يدوي — زر «ضغط» بجانب كل مقطع</option>
+          <option value="manual">يدوي — WAV للمشغّل + نسخة MP3 جاهزة للتنزيل</option>
           <option value="auto">تلقائي — يتحول فور وصول الصوت ويحل مكان WAV</option>
         </select>
-        <span class="setting-hint">MP3 بجودة 192kbps و44100Hz، يعمل داخل المتصفح دون سيرفر. في الوضع التلقائي يحل مشغّل MP3 مكان مشغّل WAV في البطاقة نهائياً، ويبقى WAV محفوظاً داخلياً فقط لعمليات الدمج وZIP.</span>
+        <span class="setting-hint">MP3 بجودة 192kbps و44100Hz، يعمل داخل المتصفح دون سيرفر. في كل الأحوال يُحوَّل الصوت فور إنشائه ويُحفظ في كاش المتصفح (IndexedDB)، فلا يُعاد ترميزه عند تحديث الصفحة. في الوضع التلقائي يحل مشغّل MP3 مكان مشغّل WAV داخل البطاقة، ويبقى WAV محفوظاً داخلياً للدمج وZIP.</span>
       </div>
 
       <div class="setting-row">
@@ -3355,17 +3396,42 @@
     }
 
     async function saveSegmentAudioBlob(segId, wavBlob) {
-      if (!segId || !wavBlob) return;
+      if (!segId || !wavBlob) return 0;
       try {
         const db = await openAppDB();
         const tx = db.transaction('audio', 'readwrite');
-        tx.objectStore('audio').put({ id: segId, wavBlob, updatedAt: Date.now() });
+        const wavStamp = Date.now();
+        // mp3Blob: null يمسح أي نسخة MP3 قديمة عند إعادة توليد المقطع (كاش وليس مرفوعاً للجلسة)
+        tx.objectStore('audio').put({ id: segId, wavBlob, mp3Blob: null, wavStamp, updatedAt: wavStamp });
         await new Promise((res, rej) => {
           tx.oncomplete = res;
           tx.onerror = () => rej(tx.error);
         });
+        return wavStamp;
       } catch (err) {
         console.error('saveSegmentAudioBlob error:', err);
+        return 0;
+      }
+    }
+
+    async function saveSegmentMp3Blob(segId, mp3Blob, expectedWavStamp = 0) {
+      if (!segId || !mp3Blob) return;
+      try {
+        const db = await openAppDB();
+        const existing = await new Promise((res) => {
+          const tx = db.transaction('audio', 'readonly');
+          const req = tx.objectStore('audio').get(segId);
+          req.onsuccess = () => res(req.result || null);
+          req.onerror = () => res(null);
+        });
+        if (!existing || !existing.wavBlob) return;
+        // لا تربط MP3 قديماً بـ WAV جديد أُعيد توليده أثناء التحويل
+        if (expectedWavStamp && existing.wavStamp && existing.wavStamp !== expectedWavStamp) return;
+        const tx = db.transaction('audio', 'readwrite');
+        tx.objectStore('audio').put({ ...existing, mp3Blob, updatedAt: Date.now() });
+        await new Promise((res) => { tx.oncomplete = res; tx.onerror = res; });
+      } catch (err) {
+        console.error('saveSegmentMp3Blob error:', err);
       }
     }
 
@@ -3439,7 +3505,12 @@
         status: 'idle',
         assignedAccountName: '',
         generatedSig: rawSeg.generatedSig || '',
-        errorMsg: ''
+        errorMsg: '',
+        mp3Blob: null,
+        mp3Url: null,
+        mp3Status: 'idle',
+        mp3Progress: 0,
+        mp3Error: ''
       };
 
       if (seg.isTwoSpeaker && seg.turns.length === 0 && seg.text) {
@@ -3454,6 +3525,14 @@
         if (!seg.generatedSig) {
           seg.generatedSig = getSegmentSignature(seg);
         }
+        // كاش MP3: إن وُجد لا نعيد الترميز عند تحديث الصفحة
+        if (storedAudio.mp3Blob) {
+          seg.mp3Blob = storedAudio.mp3Blob;
+          seg.mp3Url = URL.createObjectURL(storedAudio.mp3Blob);
+          seg.mp3Status = 'ready';
+          seg.mp3Progress = 100;
+        }
+        seg.wavCacheStamp = storedAudio.wavStamp || storedAudio.updatedAt || 0;
       }
       return seg;
     }
@@ -3597,9 +3676,8 @@
       syncSettingsUI();
       resetDailyCountersIfNeeded();
       renderSegments();
-      if (state.settings.mp3Mode === 'auto') {
-        state.segments.filter(s => s.wavBlob && !s.mp3Url).forEach(s => enqueueMp3Conversion(s.id));
-      }
+      // أي مقطع WAV بلا كاش MP3 يُحوَّل مرة واحدة فقط ثم يُحفظ في الكاش
+      state.segments.filter(s => s.wavBlob && !s.mp3Url).forEach(s => enqueueMp3Conversion(s.id));
       renderAccounts();
       updateDerivedFilenameUI();
       updateStoryCounters();
@@ -6643,6 +6721,7 @@ Return ONLY valid JSON matching the schema.`;
         audioId = '',
         src = '',
         downloadHref = '#',
+        downloadId = '',
         downloadName = '',
         downloadTitle = 'تنزيل الصوت',
         downloadAria = 'تنزيل الصوت',
@@ -6653,7 +6732,7 @@ Return ONLY valid JSON matching the schema.`;
         <div class="cap-player"${rootId ? ` id="${escapeHtml(rootId)}"` : ''}${dataSegAudio ? ` data-seg-audio="${escapeHtml(dataSegAudio)}"` : ''}${audioMode ? ` data-audio-mode="${escapeHtml(audioMode)}"` : ''}>
           <audio${audioId ? ` id="${escapeHtml(audioId)}"` : ''} class="cap-audio"${src ? ` src="${escapeHtml(src)}"` : ''} preload="metadata"></audio>
           <div class="cap-seek-row">
-            <a class="cap-download" href="${escapeHtml(downloadHref)}"${downloadName ? ` download="${escapeHtml(downloadName)}"` : ''} title="${escapeHtml(downloadTitle)}" aria-label="${escapeHtml(downloadAria)}">
+            <a class="cap-download"${downloadId ? ` id="${escapeHtml(downloadId)}"` : ''} href="${escapeHtml(downloadHref)}"${downloadName ? ` download="${escapeHtml(downloadName)}"` : ''} title="${escapeHtml(downloadTitle)}" aria-label="${escapeHtml(downloadAria)}">
               ${CAP_ICONS.download}
             </a>
             <div class="cap-seek-wrap">
@@ -6824,13 +6903,21 @@ Return ONLY valid JSON matching the schema.`;
       const container = document.getElementById('mergedResultContainer');
       if (!container) return null;
       if (!container.querySelector('.cap-player')) {
-        container.innerHTML = buildCustomAudioPlayerHtml({
-          rootId: 'mergedPlayerRoot',
-          audioId: 'mergedAudioPlayer',
-          downloadName: 'story.wav',
-          downloadTitle: 'تنزيل الملف المدمج',
-          downloadAria: 'تنزيل الملف المدمج'
-        });
+        container.innerHTML = `
+          <div class="merged-result-head">
+            <div class="merged-result-title">🎚️ الملف المدمج</div>
+            <div id="mergedResultMeta" class="merged-result-meta"></div>
+          </div>
+          <div id="mergedResultFileName" class="merged-result-file" style="margin-bottom:0.3rem;"></div>
+          ${buildCustomAudioPlayerHtml({
+            rootId: 'mergedPlayerRoot',
+            audioId: 'mergedAudioPlayer',
+            downloadId: 'downloadMergedWavLink',
+            downloadName: 'story.wav',
+            downloadTitle: 'تنزيل الملف المدمج',
+            downloadAria: 'تنزيل الملف المدمج'
+          })}
+        `;
       }
       const root = document.getElementById('mergedPlayerRoot');
       if (root) initCustomAudioPlayer(root);
@@ -6838,7 +6925,7 @@ Return ONLY valid JSON matching the schema.`;
         container,
         root,
         player: document.getElementById('mergedAudioPlayer'),
-        dlLink: document.getElementById('downloadMergedWavLink')
+        dlLink: document.getElementById('downloadMergedWavLink') || container.querySelector('.cap-download')
       };
     }
 
@@ -7242,6 +7329,8 @@ Return ONLY valid JSON matching the schema.`;
         seg.mp3Blob = mp3;
         seg.mp3Url = URL.createObjectURL(mp3);
         seg.mp3Status = 'ready';
+        // حفظ MP3 في الكاش حتى لا يُعاد ترميزه بعد تحديث الصفحة
+        await saveSegmentMp3Blob(seg.id, mp3, seg.wavCacheStamp || 0);
       } catch (err) {
         seg.mp3Status = 'error';
         seg.mp3Error = err.message || 'فشل التحويل';
@@ -7777,6 +7866,10 @@ Return ONLY valid JSON matching the schema.`;
         mergedDl.removeAttribute('href');
         mergedDl.download = 'story.wav';
       }
+      const mergedMeta = document.getElementById('mergedResultMeta');
+      if (mergedMeta) mergedMeta.textContent = '';
+      const mergedFile = document.getElementById('mergedResultFileName');
+      if (mergedFile) { mergedFile.textContent = ''; mergedFile.removeAttribute('title'); }
       const extLabel = document.getElementById('mergedFilenameExtLabel');
       if (extLabel) extLabel.textContent = '.wav';
       document.getElementById('mergedResultContainer')?.classList.add('hidden');
@@ -7980,9 +8073,10 @@ Return ONLY valid JSON matching the schema.`;
         seg.generatedSig = getSegmentSignature(seg);
         seg.errorMsg = '';
 
-        await saveSegmentAudioBlob(seg.id, wavBlob);
+        seg.wavCacheStamp = await saveSegmentAudioBlob(seg.id, wavBlob);
         scheduleAutoSave();
-        if (state.settings.mp3Mode === 'auto') enqueueMp3Conversion(seg.id);
+        // تحويل فوري إلى MP3 بعد إنشاء الصوت مباشرة ثم حفظه في الكاش
+        enqueueMp3Conversion(seg.id);
         return { outcome: 'succeeded' };
       } catch (err) {
         if (err.name === 'AbortError') {
@@ -8384,11 +8478,22 @@ Return ONLY valid JSON matching the schema.`;
         }
         const player = mergedUi.player;
         const dlLink = mergedUi.dlLink;
+        try { player.pause(); } catch (_) {}
         player.src = url;
+        try { player.load(); } catch (_) {}
         dlLink.href = url;
         dlLink.download = filename;
         const extLabel = document.getElementById('mergedFilenameExtLabel');
         if (extLabel) extLabel.textContent = '.' + ext;
+        const metaEl = document.getElementById('mergedResultMeta');
+        if (metaEl) {
+          metaEl.textContent = `${readySegments.length} مقاطع • ${ext.toUpperCase()} • ${formatBytesShort(outputBlob.size)}`;
+        }
+        const fileEl = document.getElementById('mergedResultFileName');
+        if (fileEl) {
+          fileEl.textContent = filename;
+          fileEl.title = filename;
+        }
         mergedUi.container.classList.remove('hidden');
         try { mergedUi.container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
 
@@ -8618,8 +8723,8 @@ Return ONLY valid JSON matching the schema.`;
         if (target.audioBlobs) {
           for (const [segId, blob] of Object.entries(target.audioBlobs)) {
             if (blob) {
-              audioMap.set(segId, { wavBlob: blob });
-              await saveSegmentAudioBlob(segId, blob);
+              const stamp = await saveSegmentAudioBlob(segId, blob);
+              audioMap.set(segId, { wavBlob: blob, wavStamp: stamp });
             }
           }
         }
@@ -8630,9 +8735,7 @@ Return ONLY valid JSON matching the schema.`;
         updateStoryCounters();
         updateDerivedFilenameUI();
         renderSegments();
-        if (state.settings.mp3Mode === 'auto') {
-          state.segments.filter(s => s.wavBlob && !s.mp3Url).forEach(s => enqueueMp3Conversion(s.id));
-        }
+        state.segments.filter(s => s.wavBlob && !s.mp3Url).forEach(s => enqueueMp3Conversion(s.id));
         scheduleAutoSave();
         closeAllModals();
         showToast(`تمت استعادة العمل "${target.title}"`, 'success');
