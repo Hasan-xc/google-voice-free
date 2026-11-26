@@ -7355,6 +7355,7 @@ Return ONLY valid JSON matching the schema.`;
               </svg>
             </button>
             <div id="card_menu_${escapeHtml(seg.id)}" class="card-dots-dropdown hidden" role="menu">
+              <button type="button" class="card-dots-item" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" role="menuitem" ${isGenerating ? 'disabled' : ''}>🔄 إعادة إنشاء الصوت</button>
               <button type="button" class="card-dots-item" data-seg-action="tag-one" data-id="${escapeHtml(seg.id)}" role="menuitem" ${(isGenerating || seg.taggingBusy) ? 'disabled' : ''}>${seg.taggingBusy ? '⏳ جارٍ الوسم...' : '🎬 وسم'}</button>
               <button type="button" class="card-dots-item" data-seg-action="play-from" data-id="${escapeHtml(seg.id)}" role="menuitem">▶️ تشغيل من هنا</button>
               <button type="button" class="card-dots-item" data-seg-action="insert-above" data-id="${escapeHtml(seg.id)}" role="menuitem">⬆️ إضافة صندوق فوق</button>
