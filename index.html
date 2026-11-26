@@ -1389,6 +1389,173 @@
       cursor: pointer;
     }
 
+    /* شريط الصوت المصغّر العائم داخل مربع النص (بوردر شفاف) */
+    .mini-audio-bar {
+      position: absolute;
+      bottom: 0.45rem;
+      right: 2.95rem;
+      left: 0.55rem;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0 0.4rem;
+      border-radius: 10px;
+      background: rgba(127, 145, 170, 0.16);
+      background: color-mix(in srgb, var(--bg-input) 80%, transparent);
+      border: 1px solid rgba(100, 116, 139, 0.38);
+      border: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      box-shadow: 0 3px 12px rgba(15, 23, 42, 0.16);
+      z-index: 5;
+    }
+
+    .mini-play {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 0 0 auto;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .mini-play:hover {
+      background: var(--primary-hover);
+      transform: scale(1.05);
+    }
+
+    .mini-time {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      direction: ltr;
+      font-variant-numeric: tabular-nums;
+      flex: 0 0 auto;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .mini-seek-track {
+      position: relative;
+      flex: 1 1 auto;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      min-width: 36px;
+    }
+
+    .mini-seek-track::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      border-radius: 4px;
+      background: var(--border-color);
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    .mini-seek-fill {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      border-radius: 4px;
+      background: var(--primary);
+      width: 0%;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+
+    .mini-seek {
+      position: relative;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 14px;
+      background: transparent;
+      margin: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .mini-seek::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+    }
+
+    .mini-seek::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+    }
+
+    .mini-menu-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .mini-dots {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .mini-dots:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .mini-audio-menu {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: -4px;
+      min-width: 200px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      padding: 0.3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      z-index: 60;
+    }
+
+    a.card-dots-item {
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
     .spinner {
       width: 15px;
       height: 15px;
@@ -6959,16 +7126,147 @@ Return ONLY valid JSON matching the schema.`;
       const useMp3 = Boolean(auto && seg.mp3Url && seg.mp3Blob);
       const srcUrl = useMp3 ? seg.mp3Url : seg.audioUrl;
       if (!srcUrl) return '';
-      const ext = useMp3 ? 'mp3' : 'wav';
-      return buildCustomAudioPlayerHtml({
-        src: srcUrl,
-        downloadHref: srcUrl,
-        downloadName: `segment_${idx + 1}.${ext}`,
-        downloadTitle: `تنزيل المقطع الصوتي (${ext.toUpperCase()})`,
-        downloadAria: `تنزيل المقطع ${idx + 1}`,
-        dataSegAudio: seg.id,
-        audioMode: ext
-      });
+      return `
+        <div class="mini-audio-bar" data-seg-audio="${escapeHtml(seg.id)}" data-audio-mode="${useMp3 ? 'mp3' : 'wav'}">
+          <audio class="mini-cap-audio cap-audio" src="${srcUrl}" preload="metadata"></audio>
+          <button type="button" class="mini-play" title="تشغيل" aria-label="تشغيل وإيقاف صوت المقطع ${idx + 1}">
+            <svg class="mini-icon-play" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20"/></svg>
+            <svg class="mini-icon-pause hidden" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          </button>
+          <span class="mini-time mini-time-cur">00:00</span>
+          <div class="mini-seek-track">
+            <div class="mini-seek-fill"></div>
+            <input type="range" class="mini-seek" min="0" max="1000" value="0" step="1" aria-label="تقدم صوت المقطع ${idx + 1}" />
+          </div>
+          <span class="mini-time mini-time-dur">00:00</span>
+          <div class="mini-menu-wrap">
+            <button type="button" class="mini-dots" title="خيارات الصوت (تسريع/تنزيل)" aria-label="خيارات صوت المقطع ${idx + 1}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+              </svg>
+            </button>
+            <div class="mini-audio-menu hidden" role="menu"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildMiniAudioMenuHtml(seg, idx) {
+      const items = [];
+      const rate = Number(seg.rate) === 2 ? 2 : 1;
+      items.push(`<button type="button" class="card-dots-item" data-seg-action="toggle-speed" data-id="${escapeHtml(seg.id)}" role="menuitem">${rate === 2 ? '⏪ إرجاع السرعة إلى ×1' : '⏩ تسريع الصوت ×2'}</button>`);
+      if (state.settings.mp3Mode !== 'auto' && !seg.mp3Blob) {
+        items.push(`<button type="button" class="card-dots-item" data-seg-action="compress-mp3" data-id="${escapeHtml(seg.id)}" role="menuitem">🗜️ ضغط إلى MP3</button>`);
+      }
+      if (seg.mp3Url && seg.mp3Blob) {
+        items.push(`<a class="card-dots-item" href="${seg.mp3Url}" download="segment_${idx + 1}.mp3" role="menuitem">⬇️ تنزيل MP3 (${formatBytesShort(seg.mp3Blob.size)})</a>`);
+      }
+      if (seg.audioUrl && seg.wavBlob) {
+        items.push(`<a class="card-dots-item" href="${seg.audioUrl}" download="segment_${idx + 1}.wav" role="menuitem">⬇️ تنزيل WAV (${formatBytesShort(seg.wavBlob.size)})</a>`);
+      }
+      return items.join('');
+    }
+
+    function initMiniAudioBars(scope = document) {
+      scope.querySelectorAll('.mini-audio-bar').forEach(initMiniAudioBar);
+    }
+
+    function initMiniAudioBar(root) {
+      if (!root || root.dataset.miniReady === '1') return;
+      const audio = root.querySelector('audio.mini-cap-audio');
+      if (!audio) return;
+      root.dataset.miniReady = '1';
+
+      const segId = root.getAttribute('data-seg-audio');
+      const seg = state.segments.find(s => s.id === segId);
+      if (seg && Number(seg.rate) === 2) audio.playbackRate = 2;
+
+      const playBtn = root.querySelector('.mini-play');
+      const seek = root.querySelector('.mini-seek');
+      const fill = root.querySelector('.mini-seek-fill');
+      const curEl = root.querySelector('.mini-time-cur');
+      const durEl = root.querySelector('.mini-time-dur');
+      const dotsBtn = root.querySelector('.mini-dots');
+      const menu = root.querySelector('.mini-audio-menu');
+      const iconPlay = root.querySelector('.mini-icon-play');
+      const iconPause = root.querySelector('.mini-icon-pause');
+
+      const setPlayingUi = (playing) => {
+        if (iconPlay) iconPlay.classList.toggle('hidden', playing);
+        if (iconPause) iconPause.classList.toggle('hidden', !playing);
+        if (playBtn) playBtn.title = playing ? 'إيقاف مؤقت' : 'تشغيل';
+      };
+
+      const sync = () => {
+        const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+        const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+        const pct = duration > 0 ? Math.min(100, Math.max(0, (current / duration) * 100)) : 0;
+        if (root.dataset.seeking !== '1' && seek) seek.value = String(Math.round(pct * 10));
+        if (fill) fill.style.width = pct + '%';
+        if (curEl) curEl.textContent = formatPlayerTime(current);
+        if (durEl) durEl.textContent = formatPlayerTime(duration);
+      };
+
+      audio.addEventListener('play', () => setPlayingUi(true));
+      audio.addEventListener('pause', () => setPlayingUi(false));
+      audio.addEventListener('ended', () => setPlayingUi(false));
+      audio.addEventListener('loadedmetadata', sync);
+      audio.addEventListener('durationchange', sync);
+      audio.addEventListener('timeupdate', sync);
+
+      if (playBtn) {
+        playBtn.addEventListener('click', () => {
+          if (audio.paused) audio.play().catch(() => {});
+          else audio.pause();
+        });
+      }
+
+      if (seek) {
+        const startSeek = () => { root.dataset.seeking = '1'; };
+        const endSeek = () => { delete root.dataset.seeking; sync(); };
+        seek.addEventListener('pointerdown', startSeek);
+        seek.addEventListener('touchstart', startSeek, { passive: true });
+        seek.addEventListener('input', () => {
+          const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+          if (duration <= 0) return;
+          audio.currentTime = (Number(seek.value) / 1000) * duration;
+          sync();
+        });
+        seek.addEventListener('change', endSeek);
+        seek.addEventListener('pointerup', endSeek);
+        seek.addEventListener('touchend', endSeek);
+        seek.addEventListener('blur', endSeek);
+      }
+
+      if (dotsBtn && menu) {
+        dotsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const liveSeg = state.segments.find(s => s.id === segId);
+          if (!liveSeg) return;
+          const idx = state.segments.findIndex(x => x.id === segId);
+          const wasHidden = menu.classList.contains('hidden');
+          closeAllCardMenus();
+          if (wasHidden) {
+            menu.innerHTML = buildMiniAudioMenuHtml(liveSeg, idx);
+            menu.classList.remove('hidden');
+          }
+        });
+      }
+    }
+
+    function toggleMiniAudioSpeed(id) {
+      const seg = state.segments.find(s => s.id === id);
+      if (!seg) return;
+      seg.rate = Number(seg.rate) === 2 ? 1 : 2;
+      const safeId = (window.CSS && typeof CSS.escape === 'function')
+        ? CSS.escape(id)
+        : String(id).replace(/"/g, '\\"');
+      const bar = document.querySelector(`.mini-audio-bar[data-seg-audio="${safeId}"]`);
+      if (!bar) return;
+      const audio = bar.querySelector('audio.mini-cap-audio');
+      if (audio) audio.playbackRate = seg.rate;
+      const item = bar.querySelector('[data-seg-action="toggle-speed"]');
+      if (item) item.textContent = seg.rate === 2 ? '⏪ إرجاع السرعة إلى ×1' : '⏩ تسريع الصوت ×2';
     }
 
     function getSegmentStatusInfo(seg) {
@@ -7006,6 +7304,7 @@ Return ONLY valid JSON matching the schema.`;
       const isQueued = seg.status === 'queued';
       const segTagsCount = countInlineTags(seg.text);
       const statusInfo = getSegmentStatusInfo(seg);
+      const mp3AreaHtml = renderMp3AreaHtml(seg);
 
       let voiceSelectorsHtml = '';
       if (seg.isTwoSpeaker) {
@@ -7086,12 +7385,10 @@ Return ONLY valid JSON matching the schema.`;
           </div>
 
           <textarea class="textarea seg-textarea" data-seg-action="text-edit" data-id="${escapeHtml(seg.id)}" aria-label="نص المقطع ${idx + 1}" placeholder="اكتب نص الكلام هنا...">${escapeHtml(seg.text)}</textarea>
+          ${(!isGenerating && (seg.audioUrl || seg.mp3Url)) ? renderSegmentAudioBarHtml(seg) : ''}
         </div>
 
-        ${(seg.audioUrl || seg.mp3Url) ? `
-          ${renderSegmentAudioBarHtml(seg)}
-          <div class="seg-mp3-area" id="mp3area_${escapeHtml(seg.id)}" style="margin-top:0.35rem;">${renderMp3AreaHtml(seg)}</div>
-        ` : ''}
+        ${mp3AreaHtml ? `<div class="seg-mp3-area" id="mp3area_${escapeHtml(seg.id)}" style="margin-top:0.35rem;">${mp3AreaHtml}</div>` : ''}
       `;
     }
 
@@ -7256,30 +7553,18 @@ Return ONLY valid JSON matching the schema.`;
     }
 
     function renderMp3AreaHtml(seg) {
-      const idx = state.segments.findIndex(x => x.id === seg.id);
-      const auto = state.settings.mp3Mode === 'auto';
+      // الحالات الجاهزة (تنزيل/ضغط/معلومة الحجم) انتقلت إلى قائمة ⋮ شريط الصوت المصغّر
       if (seg.mp3Status === 'converting' || seg.mp3Status === 'queued') {
         return `<div style="display:flex; align-items:center; gap:0.45rem; font-size:0.76rem; color:var(--text-secondary);">
           <span class="spinner"></span>
           <span>${seg.mp3Status === 'queued' ? 'بانتظار دور التحويل إلى MP3...' : `جارٍ التحويل إلى MP3... <strong id="mp3pct_${escapeHtml(seg.id)}">${seg.mp3Progress || 0}%</strong>`}</span>
         </div>`;
       }
-      if (seg.mp3Url && seg.mp3Blob) {
-        if (auto) {
-          return `<div style="display:flex; align-items:center; gap:0.35rem; font-size:0.74rem; color:var(--text-secondary); font-weight:700;">
-            <span>MP3 · ${formatBytesShort(seg.mp3Blob.size)}</span>
-          </div>`;
-        }
-        return `<a class="btn btn-sm btn-primary" href="${seg.mp3Url}" download="segment_${idx + 1}.mp3">⬇ تنزيل MP3 (${formatBytesShort(seg.mp3Blob.size)})</a>`;
-      }
       if (seg.mp3Status === 'error') {
         return `<div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; font-size:0.76rem;">
           <span style="color:var(--danger);">تعذر التحويل: ${escapeHtml(seg.mp3Error || '')}</span>
           <button type="button" class="btn btn-xs" data-seg-action="compress-mp3" data-id="${escapeHtml(seg.id)}">إعادة المحاولة</button>
         </div>`;
-      }
-      if (!auto) {
-        return `<button type="button" class="btn btn-sm" data-seg-action="compress-mp3" data-id="${escapeHtml(seg.id)}" title="تحويل هذا المقطع إلى MP3 (192kbps / 44100Hz)">🗜️ ضغط</button>`;
       }
       return '';
     }
@@ -7288,33 +7573,37 @@ Return ONLY valid JSON matching the schema.`;
       const seg = state.segments.find(x => x.id === id);
       if (!seg) return;
       const el = document.getElementById('mp3area_' + id);
-      if (el) el.innerHTML = renderMp3AreaHtml(seg);
+      if (el) {
+        const html = renderMp3AreaHtml(seg);
+        el.innerHTML = html;
+        el.classList.toggle('hidden', !html);
+      }
 
-      // في الوضع التلقائي: يستبدل مشغّل MP3 مشغّل WAV داخل البطاقة بعد اكتمال التحويل
+      // في الوضع التلقائي: يستبدل مصدر الشريط المصغّر إلى MP3 بعد اكتمال التحويل
       const safeId = (window.CSS && typeof CSS.escape === 'function')
         ? CSS.escape(id)
         : String(id).replace(/"/g, '\\"');
-      const player = document.querySelector(`.cap-player[data-seg-audio="${safeId}"]`);
-      if (player) {
+      const bar = document.querySelector(`.mini-audio-bar[data-seg-audio="${safeId}"]`);
+      if (bar) {
         const desiredMode = (state.settings.mp3Mode === 'auto' && seg.mp3Url && seg.mp3Blob) ? 'mp3' : 'wav';
-        if (player.getAttribute('data-audio-mode') !== desiredMode) {
-          const oldAudio = player.querySelector('audio.cap-audio');
+        if (bar.getAttribute('data-audio-mode') !== desiredMode) {
+          const oldAudio = bar.querySelector('audio.mini-cap-audio');
           const resumeTime = oldAudio ? oldAudio.currentTime : 0;
           const wasPlaying = oldAudio ? !oldAudio.paused : false;
           const rate = oldAudio ? oldAudio.playbackRate : 1;
 
-          player.outerHTML = renderSegmentAudioBarHtml(seg);
-          const newPlayer = document.querySelector(`.cap-player[data-seg-audio="${safeId}"]`);
-          if (newPlayer) {
-            initCustomAudioPlayer(newPlayer);
-            const newAudio = newPlayer.querySelector('audio.cap-audio');
+          bar.outerHTML = renderSegmentAudioBarHtml(seg);
+          const newBar = document.querySelector(`.mini-audio-bar[data-seg-audio="${safeId}"]`);
+          if (newBar) {
+            initMiniAudioBar(newBar);
+            const newAudio = newBar.querySelector('audio.mini-cap-audio');
             if (newAudio) {
               const restoreState = () => {
                 if (resumeTime > 0) {
                   const duration = Number.isFinite(newAudio.duration) ? newAudio.duration : resumeTime;
                   newAudio.currentTime = Math.min(resumeTime, duration);
                 }
-                if (rate === 2) setCustomPlayerRate(newPlayer, 2);
+                if (rate === 2) newAudio.playbackRate = 2;
                 if (wasPlaying) {
                   const result = newAudio.play();
                   if (result && typeof result.catch === 'function') result.catch(() => {});
@@ -7391,6 +7680,7 @@ Return ONLY valid JSON matching the schema.`;
       card.className = `segment-card ${isStale ? 'is-stale' : ''} ${isGenerating ? 'is-generating' : ''} ${isQueued ? 'is-queued' : ''}`;
       card.innerHTML = buildSegmentCardInnerHtml(seg, idx);
       initCustomAudioPlayers(card);
+      initMiniAudioBars(card);
       reapplyPlaylistHighlight();
 
       if (focusAction) {
@@ -7801,6 +8091,7 @@ Return ONLY valid JSON matching the schema.`;
       }).join('');
 
       initCustomAudioPlayers(container);
+      initMiniAudioBars(container);
       reapplyPlaylistHighlight();
       updateRetryFailedButtonVisibility();
       updateMergeSelectionUi();
@@ -7808,7 +8099,7 @@ Return ONLY valid JSON matching the schema.`;
     }
 
     function closeAllCardMenus() {
-      document.querySelectorAll('.card-dots-dropdown').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.card-dots-dropdown, .mini-audio-menu').forEach(el => el.classList.add('hidden'));
     }
 
     function insertSegmentRelative(targetId, position) {
@@ -9818,6 +10109,7 @@ Return ONLY valid JSON matching the schema.`;
         else if (action === 'delete') { closeAllCardMenus(); deleteSegmentById(id); }
         else if (action === 'tag-one') { closeAllCardMenus(); runSingleSegmentTags(id); }
         else if (action === 'compress-mp3') enqueueMp3Conversion(id);
+        else if (action === 'toggle-speed') { e.stopPropagation(); toggleMiniAudioSpeed(id); }
         else if (action === 'generate') generateSingleSegment(id);
         else if (action === 'cancel') cancelSingleSegment(id);
         else if (action === 'play-from') { closeAllCardMenus(); startPlaylistFromSegmentId(id); }
