@@ -1111,7 +1111,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       gap: 0.35rem;
       margin-bottom: 0.45rem;
     }
@@ -1326,18 +1326,14 @@
 
     .seg-textarea {
       min-height: 96px;
-      padding-bottom: 2.75rem;
       font-size: 0.86rem;
     }
 
     .floating-gen-group {
-      position: absolute;
-      bottom: 0.45rem;
-      right: 0.55rem;
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      z-index: 5;
+      flex: 0 0 auto;
     }
 
     .floating-gen-btn {
@@ -1377,16 +1373,12 @@
 
     /* شريط الصوت المصغّر العائم داخل مربع النص (بوردر شفاف) */
     .mini-audio-bar {
-      position: absolute;
-      bottom: 0.45rem;
-      right: 2.95rem;
-      left: 0.55rem;
-      height: 34px;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0 0.4rem;
-      border-radius: 10px;
+      gap: 0.3rem;
+      height: 32px;
+      padding: 0 0.35rem;
+      border-radius: 9px;
       background: rgba(127, 145, 170, 0.16);
       background: color-mix(in srgb, var(--bg-input) 80%, transparent);
       border: 1px solid rgba(100, 116, 139, 0.38);
@@ -1394,7 +1386,10 @@
       backdrop-filter: blur(5px);
       -webkit-backdrop-filter: blur(5px);
       box-shadow: 0 3px 12px rgba(15, 23, 42, 0.16);
-      z-index: 5;
+      flex: 1 1 150px;
+      min-width: 130px;
+      max-width: 300px;
+      margin-inline-start: auto;
     }
 
     .mini-play {
@@ -1425,17 +1420,18 @@
       direction: ltr;
       font-variant-numeric: tabular-nums;
       flex: 0 0 auto;
-      min-width: 30px;
-      text-align: center;
+      white-space: nowrap;
     }
 
     .mini-seek-track {
       position: relative;
+      direction: ltr;
       flex: 1 1 auto;
-      height: 14px;
+      height: 16px;
       display: flex;
       align-items: center;
-      min-width: 36px;
+      min-width: 34px;
+      cursor: pointer;
     }
 
     .mini-seek-track::before {
@@ -1462,39 +1458,43 @@
       background: var(--primary);
       width: 0%;
       pointer-events: none;
-      transition: width 0.1s linear;
+      transition: width 0.15s linear;
+    }
+
+    .mini-seek-thumb {
+      position: absolute;
+      left: 0%;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: left 0.15s linear;
+    }
+
+    /* أثناء السحب: تحديث فوري بلا تأخير للدائرة والخط معاً */
+    .mini-audio-bar.seeking .mini-seek-fill,
+    .mini-audio-bar.seeking .mini-seek-thumb {
+      transition: none;
     }
 
     .mini-seek {
-      position: relative;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       -webkit-appearance: none;
       appearance: none;
-      width: 100%;
-      height: 14px;
       background: transparent;
       margin: 0;
       cursor: pointer;
-      z-index: 2;
-    }
-
-    .mini-seek::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--primary);
-      border: 2px solid var(--bg-surface);
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
-    }
-
-    .mini-seek::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--primary);
-      border: 2px solid var(--bg-surface);
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+      z-index: 3;
+      opacity: 0;
     }
 
     .mini-menu-wrap {
@@ -1523,7 +1523,7 @@
 
     .mini-audio-menu {
       position: absolute;
-      bottom: calc(100% + 8px);
+      top: calc(100% + 8px);
       left: -4px;
       min-width: 200px;
       background: var(--bg-surface);
@@ -1535,6 +1535,14 @@
       flex-direction: column;
       gap: 0.15rem;
       z-index: 60;
+    }
+
+    /* على الشاشات الضيقة: أخفِ المدة الكلية واكتفِ بالوقت الحالي */
+    @media (max-width: 420px) {
+      .mini-time-sep,
+      .mini-time-dur {
+        display: none;
+      }
     }
 
     a.card-dots-item {
@@ -7119,12 +7127,12 @@ Return ONLY valid JSON matching the schema.`;
             <svg class="mini-icon-play" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20"/></svg>
             <svg class="mini-icon-pause hidden" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
           </button>
-          <span class="mini-time mini-time-cur">00:00</span>
           <div class="mini-seek-track">
             <div class="mini-seek-fill"></div>
-            <input type="range" class="mini-seek" min="0" max="1000" value="0" step="1" aria-label="تقدم صوت المقطع ${idx + 1}" />
+            <div class="mini-seek-thumb"></div>
+            <input type="range" class="mini-seek" min="0" max="100" step="0.1" value="0" aria-label="تقدم صوت المقطع ${idx + 1}" />
           </div>
-          <span class="mini-time mini-time-dur">00:00</span>
+          <span class="mini-time" dir="ltr"><span class="mini-time-cur">00:00</span><span class="mini-time-sep"> / </span><span class="mini-time-dur">00:00</span></span>
           <div class="mini-menu-wrap">
             <button type="button" class="mini-dots" title="خيارات الصوت (تسريع/تنزيل)" aria-label="خيارات صوت المقطع ${idx + 1}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -7170,6 +7178,7 @@ Return ONLY valid JSON matching the schema.`;
       const playBtn = root.querySelector('.mini-play');
       const seek = root.querySelector('.mini-seek');
       const fill = root.querySelector('.mini-seek-fill');
+      const thumb = root.querySelector('.mini-seek-thumb');
       const curEl = root.querySelector('.mini-time-cur');
       const durEl = root.querySelector('.mini-time-dur');
       const dotsBtn = root.querySelector('.mini-dots');
@@ -7187,8 +7196,9 @@ Return ONLY valid JSON matching the schema.`;
         const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
         const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
         const pct = duration > 0 ? Math.min(100, Math.max(0, (current / duration) * 100)) : 0;
-        if (root.dataset.seeking !== '1' && seek) seek.value = String(Math.round(pct * 10));
+        if (root.dataset.seeking !== '1' && seek) seek.value = String(pct);
         if (fill) fill.style.width = pct + '%';
+        if (thumb) thumb.style.left = pct + '%';
         if (curEl) curEl.textContent = formatPlayerTime(current);
         if (durEl) durEl.textContent = formatPlayerTime(duration);
       };
@@ -7208,14 +7218,14 @@ Return ONLY valid JSON matching the schema.`;
       }
 
       if (seek) {
-        const startSeek = () => { root.dataset.seeking = '1'; };
-        const endSeek = () => { delete root.dataset.seeking; sync(); };
+        const startSeek = () => { root.dataset.seeking = '1'; root.classList.add('seeking'); };
+        const endSeek = () => { delete root.dataset.seeking; root.classList.remove('seeking'); sync(); };
         seek.addEventListener('pointerdown', startSeek);
         seek.addEventListener('touchstart', startSeek, { passive: true });
         seek.addEventListener('input', () => {
           const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
           if (duration <= 0) return;
-          audio.currentTime = (Number(seek.value) / 1000) * duration;
+          audio.currentTime = (Number(seek.value) / 100) * duration;
           sync();
         });
         seek.addEventListener('change', endSeek);
@@ -7323,12 +7333,22 @@ Return ONLY valid JSON matching the schema.`;
         <span class="seg-index ${statusInfo.cls}" title="${escapeHtml(statusInfo.label)}">${idx + 1}</span>
         <div class="segment-top">
           <div class="segment-meta">
+            <div class="floating-gen-group">
+              <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${isGenerating ? 'disabled' : ''}>
+                ${isGenerating
+                  ? '<span class="spinner"></span>'
+                  : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 6.18 21l1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.82 4.73L17.82 21z"/></svg>'}
+              </button>
+              ${isGenerating ? `
+                <button type="button" class="floating-cancel-btn" data-seg-action="cancel" data-id="${escapeHtml(seg.id)}" title="إلغاء التوليد" aria-label="إلغاء توليد المقطع ${idx + 1}">✕</button>
+              ` : ''}
+            </div>
             <label class="seg-select-wrap" title="تضمين هذا المقطع في الدمج (وفي «تشغيل من هنا»)">
               <input type="checkbox" class="seg-select-check" data-seg-select="${escapeHtml(seg.id)}" ${seg.selected !== false ? 'checked' : ''} aria-label="تحديد المقطع ${idx + 1} للدمج" />
             </label>
             ${voiceSelectorsHtml}
           </div>
-
+          ${(!isGenerating && (seg.audioUrl || seg.mp3Url)) ? renderSegmentAudioBarHtml(seg) : ''}
           <div class="card-menu-wrap">
             <button type="button" class="btn" style="width:30px; height:30px; padding:0; border-radius:8px;" data-seg-action="toggle-dots" data-id="${escapeHtml(seg.id)}" title="خيارات الصندوق" aria-label="خيارات المقطع ${idx + 1}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -7348,19 +7368,7 @@ Return ONLY valid JSON matching the schema.`;
         <div class="seg-status-slot ${statusBadge ? '' : 'hidden'}" style="margin-bottom:0.35rem;">${statusBadge}</div>
 
         <div class="seg-textarea-wrap">
-          <div class="floating-gen-group">
-            <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${isGenerating ? 'disabled' : ''}>
-              ${isGenerating
-                ? '<span class="spinner"></span>'
-                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 6.18 21l1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.82 4.73L17.82 21z"/></svg>'}
-            </button>
-            ${isGenerating ? `
-              <button type="button" class="floating-cancel-btn" data-seg-action="cancel" data-id="${escapeHtml(seg.id)}" title="إلغاء التوليد" aria-label="إلغاء توليد المقطع ${idx + 1}">✕</button>
-            ` : ''}
-          </div>
-
           <textarea class="textarea seg-textarea" data-seg-action="text-edit" data-id="${escapeHtml(seg.id)}" aria-label="نص المقطع ${idx + 1}" placeholder="اكتب نص الكلام هنا...">${escapeHtml(seg.text)}</textarea>
-          ${(!isGenerating && (seg.audioUrl || seg.mp3Url)) ? renderSegmentAudioBarHtml(seg) : ''}
         </div>
 
         ${mp3AreaHtml ? `<div class="seg-mp3-area" id="mp3area_${escapeHtml(seg.id)}" style="margin-top:0.35rem;">${mp3AreaHtml}</div>` : ''}
