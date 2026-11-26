@@ -1191,20 +1191,6 @@
       50% { transform: scale(1.08); box-shadow: 0 0 0 4px transparent; }
     }
 
-    .seg-tag-count-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.2rem;
-      padding: 0.12rem 0.45rem;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 0.69rem;
-      font-weight: 800;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
     .seg-status-line {
       display: inline-block;
       font-size: 0.72rem;
@@ -7288,21 +7274,11 @@ Return ONLY valid JSON matching the schema.`;
       return { cls: 'is-idle', label: 'لم يُولَّد بعد' };
     }
 
-    function formatArabicTagCount(n) {
-      const count = Math.max(0, Number(n) || 0);
-      if (count === 0) return '0 وسوم';
-      if (count === 1) return 'وسم واحد';
-      if (count === 2) return 'وسمان';
-      if (count >= 3 && count <= 10) return `${count} وسوم`;
-      return `${count} وسم`;
-    }
-
     function buildSegmentCardInnerHtml(seg, idx) {
       const currentSig = getSegmentSignature(seg);
       const isStale = Boolean(seg.wavBlob && seg.generatedSig && seg.generatedSig !== currentSig);
       const isGenerating = seg.status === 'generating';
       const isQueued = seg.status === 'queued';
-      const segTagsCount = countInlineTags(seg.text);
       const statusInfo = getSegmentStatusInfo(seg);
       const mp3AreaHtml = renderMp3AreaHtml(seg);
 
@@ -7351,7 +7327,6 @@ Return ONLY valid JSON matching the schema.`;
               <input type="checkbox" class="seg-select-check" data-seg-select="${escapeHtml(seg.id)}" ${seg.selected !== false ? 'checked' : ''} aria-label="تحديد المقطع ${idx + 1} للدمج" />
             </label>
             ${voiceSelectorsHtml}
-            <span class="seg-tag-count-pill" title="عدد الوسوم الصوتية في المقطع">${escapeHtml(formatArabicTagCount(segTagsCount))}</span>
           </div>
 
           <div class="card-menu-wrap">
@@ -10155,9 +10130,6 @@ Return ONLY valid JSON matching the schema.`;
         }
         const card = document.getElementById(`seg_card_${id}`);
         if (card) {
-          const tagCountPill = card.querySelector('.seg-tag-count-pill');
-          if (tagCountPill) tagCountPill.textContent = formatArabicTagCount(countInlineTags(seg.text));
-
           const statusInfo = getSegmentStatusInfo(seg);
           const indexEl = card.querySelector('.seg-index');
           if (indexEl) {
