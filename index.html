@@ -1111,7 +1111,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 0.35rem;
       margin-bottom: 0.45rem;
     }
@@ -1326,14 +1326,18 @@
 
     .seg-textarea {
       min-height: 96px;
+      padding-top: 2.9rem;
       font-size: 0.86rem;
     }
 
     .floating-gen-group {
+      position: absolute;
+      top: 0.45rem;
+      right: 0.55rem;
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      flex: 0 0 auto;
+      z-index: 6;
     }
 
     .floating-gen-btn {
@@ -1373,6 +1377,10 @@
 
     /* شريط الصوت المصغّر العائم داخل مربع النص (بوردر شفاف) */
     .mini-audio-bar {
+      position: absolute;
+      top: 0.45rem;
+      left: 0.55rem;
+      right: 2.95rem;
       display: flex;
       align-items: center;
       gap: 0.3rem;
@@ -1386,10 +1394,7 @@
       backdrop-filter: blur(5px);
       -webkit-backdrop-filter: blur(5px);
       box-shadow: 0 3px 12px rgba(15, 23, 42, 0.16);
-      flex: 1 1 150px;
-      min-width: 130px;
-      max-width: 300px;
-      margin-inline-start: auto;
+      z-index: 5;
     }
 
     .mini-play {
@@ -7333,22 +7338,11 @@ Return ONLY valid JSON matching the schema.`;
         <span class="seg-index ${statusInfo.cls}" title="${escapeHtml(statusInfo.label)}">${idx + 1}</span>
         <div class="segment-top">
           <div class="segment-meta">
-            <div class="floating-gen-group">
-              <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${isGenerating ? 'disabled' : ''}>
-                ${isGenerating
-                  ? '<span class="spinner"></span>'
-                  : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 6.18 21l1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.82 4.73L17.82 21z"/></svg>'}
-              </button>
-              ${isGenerating ? `
-                <button type="button" class="floating-cancel-btn" data-seg-action="cancel" data-id="${escapeHtml(seg.id)}" title="إلغاء التوليد" aria-label="إلغاء توليد المقطع ${idx + 1}">✕</button>
-              ` : ''}
-            </div>
             <label class="seg-select-wrap" title="تضمين هذا المقطع في الدمج (وفي «تشغيل من هنا»)">
               <input type="checkbox" class="seg-select-check" data-seg-select="${escapeHtml(seg.id)}" ${seg.selected !== false ? 'checked' : ''} aria-label="تحديد المقطع ${idx + 1} للدمج" />
             </label>
             ${voiceSelectorsHtml}
           </div>
-          ${(!isGenerating && (seg.audioUrl || seg.mp3Url)) ? renderSegmentAudioBarHtml(seg) : ''}
           <div class="card-menu-wrap">
             <button type="button" class="btn" style="width:30px; height:30px; padding:0; border-radius:8px;" data-seg-action="toggle-dots" data-id="${escapeHtml(seg.id)}" title="خيارات الصندوق" aria-label="خيارات المقطع ${idx + 1}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -7368,6 +7362,17 @@ Return ONLY valid JSON matching the schema.`;
         <div class="seg-status-slot ${statusBadge ? '' : 'hidden'}" style="margin-bottom:0.35rem;">${statusBadge}</div>
 
         <div class="seg-textarea-wrap">
+          <div class="floating-gen-group">
+            <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${isGenerating ? 'disabled' : ''}>
+              ${isGenerating
+                ? '<span class="spinner"></span>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 6.18 21l1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.82 4.73L17.82 21z"/></svg>'}
+            </button>
+            ${isGenerating ? `
+              <button type="button" class="floating-cancel-btn" data-seg-action="cancel" data-id="${escapeHtml(seg.id)}" title="إلغاء التوليد" aria-label="إلغاء توليد المقطع ${idx + 1}">✕</button>
+            ` : ''}
+          </div>
+          ${(!isGenerating && (seg.audioUrl || seg.mp3Url)) ? renderSegmentAudioBarHtml(seg) : ''}
           <textarea class="textarea seg-textarea" data-seg-action="text-edit" data-id="${escapeHtml(seg.id)}" aria-label="نص المقطع ${idx + 1}" placeholder="اكتب نص الكلام هنا...">${escapeHtml(seg.text)}</textarea>
         </div>
 
