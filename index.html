@@ -1064,6 +1064,85 @@
       border-color: var(--accent);
     }
 
+    /* تمييز البطاقة أثناء المعاينة المتسلسلة (تشغيل الكل) */
+    .segment-card.is-playing {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    /* مربّع تحديد المقطع (للدمج الجزئي) */
+    .seg-select-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .seg-select-wrap:hover {
+      border-color: var(--primary);
+    }
+
+    .seg-select-check {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      margin: 0;
+      flex: 0 0 auto;
+    }
+
+    /* شريط تحديد المقاطع فوق القائمة */
+    .segments-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0.45rem 0.65rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 0.75rem;
+      font-size: 0.78rem;
+    }
+
+    .segments-toolbar .sel-count-label {
+      font-weight: 800;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .segments-toolbar .sel-hint {
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      min-width: 0;
+    }
+
+    /* شريط المعاينة المتسلسلة */
+    .playlist-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.55rem;
+    }
+
+    .playlist-status {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1 1 auto;
+    }
+
     .segment-top {
       display: flex;
       align-items: center;
@@ -2247,6 +2326,43 @@
         <input type="text" id="mergedFilenameInput" class="input" placeholder="story_audio" aria-label="اسم الملف المدمج" />
         <span id="mergedFilenameExtLabel" style="font-weight:700; color:var(--text-secondary);">.wav</span>
         <button type="button" class="btn btn-sm" id="resetFilenameAutoBtn" title="إعادة الاشتقاق التلقائي من أول كلمات القصة" style="white-space:nowrap;">تلقائي ↻</button>
+      </div>
+
+      <!-- المعاينة المتسلسلة: تشغيل المقاطع الجاهزة واحدة تلو الأخرى قبل الدمج -->
+      <div class="export-card" id="playlistCard" style="margin-bottom:0.65rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+          <div style="font-weight:800; font-size:0.9rem;">▶️ معاينة متسلسلة (تشغيل الكل)</div>
+          <label style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.76rem; font-weight:700; cursor:pointer;">
+            <input type="checkbox" id="playlistFollowCheck" checked />
+            تتبّع المقطع الحالي
+          </label>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.2rem;">
+          يشغّل المقاطع الجاهزة واحدة تلو الأخرى بترتيب القصة مع وقفة المقاطع المحددة — لمراجعة التدفق قبل الدمج. للبدء من مقطع معيّن استخدم «⋮ → ▶️ تشغيل من هنا».
+        </div>
+        <div class="playlist-bar">
+          <button type="button" class="btn btn-sm btn-primary" id="playlistPlayBtn">▶ تشغيل الكل</button>
+          <button type="button" class="btn btn-sm btn-danger hidden" id="playlistStopBtn" title="إيقاف المعاينة المتسلسلة">⏹ إيقاف</button>
+          <label style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.78rem; font-weight:700;">
+            السرعة:
+            <select id="playlistSpeedSelect" class="select" style="width:auto; padding:0.3rem 0.5rem; font-size:0.78rem;" aria-label="سرعة المعاينة">
+              <option value="1" selected>×1</option>
+              <option value="1.5">×1.5</option>
+              <option value="2">×2</option>
+            </select>
+          </label>
+          <span id="playlistStatus" class="playlist-status">جاهز</span>
+        </div>
+      </div>
+
+      <!-- شريط تحديد المقاطع (للدمج الجزئي) -->
+      <div class="segments-toolbar" id="segmentsToolbar">
+        <span id="selectionCountLabel" class="sel-count-label">المحدَّد: 0 / 0</span>
+        <span class="sel-hint">تُدمَج فقط المقاطع المحدَّدة ✚</span>
+        <div style="display:inline-flex; gap:0.3rem; margin-inline-start:auto;">
+          <button type="button" class="btn btn-xs" id="selectAllSegsBtn">✓ تحديد الكل</button>
+          <button type="button" class="btn btn-xs" id="clearSelectionBtn">✗ إلغاء التحديد</button>
+        </div>
       </div>
 
       <!-- قائمة بطاقات المقاطع -->
@@ -3466,6 +3582,7 @@
       return {
         id: s.id,
         isTwoSpeaker: !!s.isTwoSpeaker,
+        selected: s.selected !== false,
         speaker: s.speaker || '',
         voice: s.voice || 'Zephyr',
         style: s.style || '',
@@ -3488,6 +3605,7 @@
       const seg = {
         id: rawSeg.id || generateId(),
         isTwoSpeaker: !!rawSeg.isTwoSpeaker,
+        selected: rawSeg.selected !== false,
         speaker: rawSeg.speaker || '',
         voice: rawSeg.voice || 'Zephyr',
         style: migrated.style,
@@ -7023,6 +7141,9 @@ Return ONLY valid JSON matching the schema.`;
       return `
         <div class="segment-top">
           <div class="segment-meta">
+            <label class="seg-select-wrap" title="تضمين هذا المقطع في الدمج (وفي «تشغيل من هنا»)">
+              <input type="checkbox" class="seg-select-check" data-seg-select="${escapeHtml(seg.id)}" ${seg.selected !== false ? 'checked' : ''} aria-label="تحديد المقطع ${idx + 1} للدمج" />
+            </label>
             <span class="seg-index ${statusInfo.cls}" title="${escapeHtml(statusInfo.label)}">${idx + 1}</span>
             ${voiceSelectorsHtml}
             <button type="button" class="btn btn-xs btn-accent" data-seg-action="tag-one" data-id="${escapeHtml(seg.id)}" title="يرسل هذا الصندوق فقط + ملخص القصة + تعليمات الوسوم إلى ${escapeHtml(state.settings.textModel)}" ${(isGenerating || seg.taggingBusy) ? 'disabled' : ''}>${seg.taggingBusy ? '⏳ جارٍ الوسم...' : '🎬 وسم'}</button>
@@ -7036,6 +7157,7 @@ Return ONLY valid JSON matching the schema.`;
               </svg>
             </button>
             <div id="card_menu_${escapeHtml(seg.id)}" class="card-dots-dropdown hidden" role="menu">
+              <button type="button" class="card-dots-item" data-seg-action="play-from" data-id="${escapeHtml(seg.id)}" role="menuitem">▶️ تشغيل من هنا</button>
               <button type="button" class="card-dots-item" data-seg-action="insert-above" data-id="${escapeHtml(seg.id)}" role="menuitem">⬆️ إضافة صندوق فوق</button>
               <button type="button" class="card-dots-item" data-seg-action="insert-below" data-id="${escapeHtml(seg.id)}" role="menuitem">⬇️ إضافة صندوق أسفل</button>
               <button type="button" class="card-dots-item danger" data-seg-action="delete" data-id="${escapeHtml(seg.id)}" role="menuitem">🗑️ حذف</button>
@@ -7363,6 +7485,7 @@ Return ONLY valid JSON matching the schema.`;
       card.className = `segment-card ${isStale ? 'is-stale' : ''} ${isGenerating ? 'is-generating' : ''} ${isQueued ? 'is-queued' : ''}`;
       card.innerHTML = buildSegmentCardInnerHtml(seg, idx);
       initCustomAudioPlayers(card);
+      reapplyPlaylistHighlight();
 
       if (focusAction) {
         const restoredEl = card.querySelector(`[data-seg-action="${focusAction}"]`);
@@ -7374,6 +7497,7 @@ Return ONLY valid JSON matching the schema.`;
         }
       }
       updateRetryFailedButtonVisibility();
+      updateMergeSelectionUi();
     }
 
 
@@ -7754,6 +7878,7 @@ Return ONLY valid JSON matching the schema.`;
           </div>
         `;
         updateRetryFailedButtonVisibility();
+        updateMergeSelectionUi();
         return;
       }
 
@@ -7770,7 +7895,9 @@ Return ONLY valid JSON matching the schema.`;
       }).join('');
 
       initCustomAudioPlayers(container);
+      reapplyPlaylistHighlight();
       updateRetryFailedButtonVisibility();
+      updateMergeSelectionUi();
       window.scrollTo(window.scrollX, scrollY);
     }
 
@@ -8418,10 +8545,228 @@ Return ONLY valid JSON matching the schema.`;
       return Math.max(0, Number(state.settings.pauseSpeaker) || 0.4);
     }
 
+    /* =========================================================================
+       PLAYLIST PREVIEW: معاينة متسلسلة — تشغيل المقاطع الجاهزة واحدة تلو الأخرى
+       ========================================================================= */
+    const playlistState = { token: 0, playing: false, currentId: null };
+    let playlistAudio = null;
+
+    function reapplyPlaylistHighlight() {
+      if (!playlistState.playing || !playlistState.currentId) return;
+      const card = document.getElementById(`seg_card_${playlistState.currentId}`);
+      if (card) card.classList.add('is-playing');
+    }
+
+    function getPlaylistAudioEl() {
+      if (!playlistAudio) {
+        playlistAudio = new Audio();
+        playlistAudio.preload = 'auto';
+      }
+      return playlistAudio;
+    }
+
+    function getPlaylistRate() {
+      const sel = document.getElementById('playlistSpeedSelect');
+      const v = parseFloat(sel && sel.value ? sel.value : '1');
+      return Number.isFinite(v) && v > 0 ? v : 1;
+    }
+
+    function getPlaylistSrc(seg) {
+      if (!seg) return null;
+      const auto = state.settings.mp3Mode === 'auto';
+      if (auto && seg.mp3Url && seg.mp3Blob) return seg.mp3Url;
+      return seg.audioUrl || null;
+    }
+
+    function clearPlaylistHighlight() {
+      playlistState.currentId = null;
+      document.querySelectorAll('.segment-card.is-playing').forEach(el => el.classList.remove('is-playing'));
+    }
+
+    function highlightPlaylistCard(id) {
+      clearPlaylistHighlight();
+      playlistState.currentId = id;
+      const card = document.getElementById(`seg_card_${id}`);
+      if (!card) return;
+      card.classList.add('is-playing');
+      const follow = document.getElementById('playlistFollowCheck');
+      if (follow && follow.checked) {
+        try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+      }
+    }
+
+    function setPlaylistStatus(text) {
+      const el = document.getElementById('playlistStatus');
+      if (el) {
+        el.textContent = text;
+        el.title = text;
+      }
+    }
+
+    function updatePlaylistUi() {
+      const playBtn = document.getElementById('playlistPlayBtn');
+      const stopBtn = document.getElementById('playlistStopBtn');
+      if (playBtn) playBtn.disabled = playlistState.playing;
+      if (stopBtn) stopBtn.classList.toggle('hidden', !playlistState.playing);
+    }
+
+    function stopPlaylist() {
+      playlistState.token++;
+      playlistState.playing = false;
+      if (playlistAudio) {
+        try { playlistAudio.pause(); } catch (_) {}
+      }
+      clearPlaylistHighlight();
+      updatePlaylistUi();
+      setPlaylistStatus('⏹ توقفت المعاينة');
+    }
+
+    function playlistSleep(ms, token) {
+      const step = 80;
+      return new Promise((resolve) => {
+        let waited = 0;
+        const tick = () => {
+          if (token !== playlistState.token) { resolve(false); return; }
+          if (waited >= ms) { resolve(true); return; }
+          waited += step;
+          setTimeout(tick, Math.min(step, ms - waited));
+        };
+        tick();
+      });
+    }
+
+    function playPlaylistUrl(src, token, rate) {
+      return new Promise((resolve) => {
+        const audio = getPlaylistAudioEl();
+        let settled = false;
+        const done = (why) => {
+          if (settled) return;
+          settled = true;
+          audio.removeEventListener('ended', onEnded);
+          audio.removeEventListener('error', onError);
+          audio.removeEventListener('pause', onPause);
+          resolve(why);
+        };
+        const onEnded = () => done('ended');
+        const onError = () => done('error');
+        const onPause = () => { if (token !== playlistState.token) done('stopped'); };
+        try { audio.pause(); } catch (_) {}
+        audio.addEventListener('ended', onEnded);
+        audio.addEventListener('error', onError);
+        audio.addEventListener('pause', onPause);
+        audio.src = src;
+        try { audio.playbackRate = rate; } catch (_) {}
+        audio.play().catch(() => done('error'));
+      });
+    }
+
+    async function startPlaylist(startIndex = 0) {
+      // إيقاف أي معاينة سابقة (يُبطل حلقتها عبر تغيّر الـ token)
+      const token = ++playlistState.token;
+      playlistState.playing = true;
+      updatePlaylistUi();
+
+      const items = [];
+      state.segments.forEach((seg, idx) => {
+        if (idx < startIndex) return;
+        if (getPlaylistSrc(seg)) items.push({ id: seg.id, idx });
+      });
+      if (items.length === 0) {
+        playlistState.playing = false;
+        updatePlaylistUi();
+        setPlaylistStatus('لا توجد مقاطع جاهزة');
+        showToast('لا توجد مقاطع صوتية جاهزة للمعاينة — ولّد صوت مقطع واحد على الأقل', 'error');
+        return;
+      }
+
+      // أوقف مشغّلات البطاقات المفتوحة حتى لا يتداخل الصوت
+      document.querySelectorAll('audio.cap-audio').forEach(a => { try { a.pause(); } catch (_) {} });
+
+      setPlaylistStatus('…');
+      let prevSeg = startIndex > 0 ? (state.segments[startIndex - 1] || null) : null;
+      let playedCount = 0;
+
+      for (let p = 0; p < items.length; p++) {
+        if (token !== playlistState.token) return;
+        const seg = state.segments.find(s => s.id === items[p].id);
+        const src = getPlaylistSrc(seg);
+        if (!seg || !src) continue;
+
+        highlightPlaylistCard(seg.id);
+        const snippet = stripAllInlineTags(String(seg.text || '')).trim().replace(/\s+/g, ' ').slice(0, 42);
+        setPlaylistStatus(`▶ ${p + 1}/${items.length} — ${snippet}${snippet.length >= 42 ? '…' : ''}`);
+
+        await playPlaylistUrl(src, token, getPlaylistRate());
+        if (token !== playlistState.token) return;
+        playedCount++;
+        prevSeg = seg;
+
+        if (p < items.length - 1) {
+          const pauseSelect = document.getElementById('pauseDurationSelect');
+          const pauseMode = (pauseSelect && pauseSelect.value) || 'auto';
+          const nextSeg = state.segments.find(s => s.id === items[p + 1].id) || null;
+          const pauseSec = computePauseSecondsBetween(prevSeg, nextSeg, pauseMode);
+          if (pauseSec > 0) {
+            setPlaylistStatus(`⏸ وقفة ${pauseSec.toFixed(2)} ث…`);
+            const alive = await playlistSleep(pauseSec * 1000, token);
+            if (!alive) return;
+          }
+        }
+      }
+
+      if (token !== playlistState.token) return;
+      playlistState.playing = false;
+      if (playlistAudio) { try { playlistAudio.pause(); } catch (_) {} }
+      clearPlaylistHighlight();
+      updatePlaylistUi();
+      setPlaylistStatus(`✅ انتهت المعاينة (${playedCount} مقطع)`);
+    }
+
+    function startPlaylistFromSegmentId(id) {
+      const idx = state.segments.findIndex(s => s.id === id);
+      if (idx === -1) return;
+      startPlaylist(idx);
+    }
+
+    /* =========================================================================
+       SELECTION: تحديد المقاطع للدمج الجزئي
+       ========================================================================= */
+    function getSelectedSegments() {
+      return state.segments.filter(s => s.selected !== false);
+    }
+
+    function getMergeButtonLabel(isMp3) {
+      const total = state.segments.length;
+      const selCount = getSelectedSegments().length;
+      const ext = isMp3 ? 'MP3' : 'WAV';
+      if (total === 0 || selCount === total) return `دمج الكل (${ext})`;
+      return `دمج المحدَّد (${selCount}) (${ext})`;
+    }
+
+    function updateMergeSelectionUi() {
+      const total = state.segments.length;
+      const selCount = getSelectedSegments().length;
+      const label = document.getElementById('selectionCountLabel');
+      if (label) label.textContent = `المحدَّد: ${selCount} / ${total}`;
+      const wavBtn = document.getElementById('mergeAllWavBtn');
+      if (wavBtn && !wavBtn.disabled) wavBtn.textContent = getMergeButtonLabel(false);
+      const mp3Btn = document.getElementById('mergeAllMp3Btn');
+      if (mp3Btn && !mp3Btn.disabled) mp3Btn.textContent = getMergeButtonLabel(true);
+    }
+
+    function setAllSegmentsSelection(selected) {
+      state.segments.forEach(s => { s.selected = selected; });
+      document.querySelectorAll('.seg-select-check[data-seg-select]').forEach(el => {
+        el.checked = selected;
+      });
+      updateMergeSelectionUi();
+      scheduleAutoSave();
+    }
+
     async function executeMergeReadySegments(readySegments, format = 'wav') {
       const isMp3 = format === 'mp3';
       const btn = document.getElementById(isMp3 ? 'mergeAllMp3Btn' : 'mergeAllWavBtn');
-      const idleText = isMp3 ? 'دمج الكل (MP3)' : 'دمج الكل (WAV)';
+      const idleText = getMergeButtonLabel(isMp3);
       if (btn) {
         btn.disabled = true;
         btn.textContent = 'جارٍ الدمج...';
@@ -8509,14 +8854,20 @@ Return ONLY valid JSON matching the schema.`;
     }
 
     async function mergeAllSegments(format = 'wav') {
-      const readySegments = state.segments.filter(s => s.wavBlob);
-      if (readySegments.length === 0) {
-        showToast('ولّد مقطعاً صوتياً واحداً على الأقل قبل الدمج', 'error');
+      const selectedSegments = getSelectedSegments();
+      if (selectedSegments.length === 0) {
+        showToast('حدّد مقطعاً واحداً على الأقل عبر مربّعات التحديد ✚ قبل الدمج', 'error');
         return;
       }
 
-      const missingCount = state.segments.filter(s => !s.wavBlob).length;
-      const staleCount = state.segments.filter(s => s.wavBlob && s.generatedSig !== getSegmentSignature(s)).length;
+      const readySegments = selectedSegments.filter(s => s.wavBlob);
+      if (readySegments.length === 0) {
+        showToast('المقاطع المحدَّدة غير مولّدة بعد — ولّد صوتها أولاً', 'error');
+        return;
+      }
+
+      const missingCount = selectedSegments.filter(s => !s.wavBlob).length;
+      const staleCount = selectedSegments.filter(s => s.wavBlob && s.generatedSig !== getSegmentSignature(s)).length;
       const proceed = () => executeMergeReadySegments(readySegments, format);
 
       if (missingCount > 0 || staleCount > 0) {
@@ -8524,7 +8875,7 @@ Return ONLY valid JSON matching the schema.`;
         if (missingCount > 0) parts.push(`${missingCount} مقطع غير مولّد`);
         if (staleCount > 0) parts.push(`${staleCount} مقطع "قديم"`);
         requestConfirmation(
-          `تنبيه: يوجد ${parts.join(' و ')}. هل تريد متابعة الدمج للمقاطع الجاهزة فقط (${readySegments.length} مقطع)؟`,
+          `تنبيه: ضمن المقاطع المحدَّدة (${selectedSegments.length}) يوجد ${parts.join(' و ')}. هل تريد متابعة الدمج للمقاطع الجاهزة فقط (${readySegments.length} مقطع)؟`,
           proceed,
           'نعم، ادمج الجاهز',
           false
@@ -9567,9 +9918,21 @@ Return ONLY valid JSON matching the schema.`;
         else if (action === 'compress-mp3') enqueueMp3Conversion(id);
         else if (action === 'generate') generateSingleSegment(id);
         else if (action === 'cancel') cancelSingleSegment(id);
+        else if (action === 'play-from') { closeAllCardMenus(); startPlaylistFromSegmentId(id); }
       });
 
       segmentsContainer.addEventListener('change', (e) => {
+        const selCheck = e.target.closest('.seg-select-check');
+        if (selCheck) {
+          const id = selCheck.getAttribute('data-seg-select');
+          const seg = state.segments.find(s => s.id === id);
+          if (seg) {
+            seg.selected = selCheck.checked;
+            updateMergeSelectionUi();
+            scheduleAutoSave();
+          }
+          return;
+        }
         const el = e.target.closest('[data-seg-action="insert-tag"]');
         if (!el) return;
         const id = el.getAttribute('data-id');
@@ -9671,10 +10034,15 @@ Return ONLY valid JSON matching the schema.`;
       document.getElementById('mergeAllWavBtn').addEventListener('click', mergeAllSegmentsToWav);
       document.getElementById('mergeAllMp3Btn').addEventListener('click', mergeAllSegmentsToMp3);
       document.getElementById('exportZipBtn').addEventListener('click', exportSegmentsAsZip);
+      document.getElementById('selectAllSegsBtn').addEventListener('click', () => setAllSegmentsSelection(true));
+      document.getElementById('clearSelectionBtn').addEventListener('click', () => setAllSegmentsSelection(false));
+      document.getElementById('playlistPlayBtn').addEventListener('click', () => startPlaylist(0));
+      document.getElementById('playlistStopBtn').addEventListener('click', () => stopPlaylist());
 
       await restoreAutoSave();
 
       ensureMergedPlayerReady();
+      updateMergeSelectionUi();
 
       updateStoryCounters();
       await refreshHistoryBadge();
