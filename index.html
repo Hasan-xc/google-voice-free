@@ -160,29 +160,6 @@
       white-space: nowrap;
     }
 
-    .model-pill-badge {
-      font-size: 0.7rem;
-      font-weight: 800;
-      padding: 0.16rem 0.55rem;
-      border-radius: 999px;
-      background: linear-gradient(135deg, var(--primary-soft), var(--accent-soft));
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      white-space: nowrap;
-      direction: ltr;
-    }
-
-    .version-pill-badge {
-      font-size: 0.66rem;
-      font-weight: 700;
-      padding: 0.12rem 0.42rem;
-      border-radius: 999px;
-      background: var(--bg-surface-2);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      direction: ltr;
-    }
-
     /* قائمة الهمبرغر */
     .hamburger-wrapper {
       position: relative;
@@ -473,20 +450,6 @@
       font-size: 0.77rem;
       min-width: 0;
       width: auto;
-    }
-
-    /* شريط الوسوم المباشر لنموذج هيدروجين على مربع النص */
-    .hydrogen-direct-bar {
-      margin-top: 0.6rem;
-      padding: 0.5rem 0.6rem;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(20, 184, 166, 0.14));
-      border: 1px solid var(--accent);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.4rem;
     }
 
     /* زرا التحليل والتنسيق الذكي في صف واحد متجاوب */
@@ -2023,8 +1986,6 @@
         </div>
         <div class="brand-title-wrap">
           <h1 class="brand-title">إنشاء قصص صوتية</h1>
-          <span class="model-pill-badge" id="activeTextModelHeaderBadge">⚡ gemini-4-hydrogen</span>
-          <span class="version-pill-badge">v3.0</span>
         </div>
       </div>
 
@@ -2127,7 +2088,7 @@
       <div class="export-card" style="margin:0.5rem 0;">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
           <strong style="font-size:0.85rem;">🧠 ملخص سياق القصة</strong>
-          <button type="button" class="btn btn-sm btn-accent" id="buildStoryContextBtn" title="يرسل النص كاملاً إلى Hydrogen ليفهم القصة ويكتب ملخصاً قصيراً">⚡ فهم القصة (Hydrogen)</button>
+          <button type="button" class="btn btn-sm btn-accent" id="buildStoryContextBtn" title="يرسل النص كاملاً إلى نموذج فهم القصة المحدد في الإعدادات ليكتب ملخصاً قصيراً">⚡ فهم القصة</button>
         </div>
         <textarea id="storyContextInput" class="textarea" rows="4" style="margin-top:0.4rem; min-height:90px; direction:ltr; text-align:left; font-size:0.8rem;" placeholder="يظهر هنا ملخص القصة بعد الضغط على «فهم القصة» (أو تلقائياً قبل الوسوم). تقدر تعدّله بيدك."></textarea>
         <div id="storyContextMeta" style="margin-top:0.25rem; font-size:0.7rem; color:var(--text-secondary);">يُرسل هذا الملخص مع كل دفعة وسوم فقط، ولا يُقرأ صوتياً.</div>
@@ -2155,24 +2116,6 @@
           <input type="number" id="splitSizeInput" class="input" value="3000" min="5" max="10000" style="width:68px; text-align:center; flex-shrink:0;" aria-label="الحد الأقصى للقطعة" />
           <button type="button" class="btn btn-sm btn-accent" id="splitStoryBtn" style="padding:0.3rem 0.55rem; flex-shrink:0;" title="قص النص حسب الوحدة والعدد المحددين" aria-label="قص النص">✂️</button>
         </div>
-      </div>
-
-      <!-- شريط الوسوم المباشر -->
-      <div class="hydrogen-direct-bar">
-        <div class="smart-tags-controls-inline">
-          <button type="button" class="btn btn-sm btn-accent" id="directHydrogenTagsBtn" title="يرسل القصة إلى نموذج النص لتحليل المشاعر وإضافة وسوم صوتية معتمدة مع الحفاظ على النص">
-            <span>⚡ وسوم ذكية (Hydrogen)</span>
-          </button>
-          <select id="directSmartDensity" class="select mini-select" aria-label="كثافة الوسوم المباشرة">
-            <option value="light">خفيف</option>
-            <option value="medium">متوسط</option>
-            <option value="heavy" selected>كثيف</option>
-            <option value="cinematic">سينمائي مكثف</option>
-          </select>
-        </div>
-        <span id="directHydrogenStatusBadge" style="font-size:0.72rem; color:var(--text-secondary); font-weight:700;">
-          يحافظ على الفقرات والوسوم اليدوية الموجودة
-        </span>
       </div>
 
       <!-- البصمة الصوتية والأسلوب الموحد للقصة -->
@@ -2236,7 +2179,7 @@
         <!-- شريط الوسوم الذكية في المعاينة -->
         <div class="smart-tags-bar">
           <div class="smart-tags-controls-inline">
-            <button type="button" class="btn btn-xs btn-accent" id="previewSmartTagsBtn" style="white-space:nowrap;">⚡ وسوم Hydrogen</button>
+            <button type="button" class="btn btn-xs btn-accent" id="previewSmartTagsBtn" style="white-space:nowrap;">⚡ وسوم ذكية</button>
             <select id="previewSmartDensity" class="select mini-select" aria-label="كثافة الوسوم">
               <option value="light">خفيف</option>
               <option value="medium">متوسط</option>
@@ -2266,7 +2209,7 @@
       <div class="segments-toolbar">
         <div style="display:inline-flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
           <div class="smart-tags-controls-inline">
-            <button type="button" class="btn btn-sm btn-accent" id="segmentsSmartTagsBtn" style="white-space:nowrap;">⚡ وسوم Hydrogen</button>
+            <button type="button" class="btn btn-sm btn-accent" id="segmentsSmartTagsBtn" style="white-space:nowrap;">⚡ وسوم ذكية</button>
             <select id="segmentsSmartDensity" class="select mini-select" aria-label="كثافة الوسوم للمقاطع">
               <option value="light">خفيف</option>
               <option value="medium">متوسط</option>
@@ -2315,7 +2258,7 @@
           <summary style="cursor:pointer; font-size:0.76rem; font-weight:700; color:var(--text-secondary);">⚙️ تعديل الحد اليومي لكل نموذج</summary>
           <div id="quotaLimitsEditor" style="margin-top:0.4rem; display:grid; grid-template-columns:1fr auto; gap:0.35rem 0.6rem; align-items:center; font-size:0.76rem;"></div>
           <div style="margin-top:0.35rem; font-size:0.7rem; color:var(--text-secondary); line-height:1.5;">
-            الحد المجاني للصوت 10 طلبات يومياً لكل مشروع (مؤكد من رسائل خطأ 429 لدى مطوّرين)، أما حد Hydrogen فتقديري، والحد الرسمي لمشروعك يظهر في AI Studio. الحد يُحسب لكل مشروع Google؛ إن كانت عدة مفاتيح من نفس المشروع فعدّل العدد يدوياً.
+            الحد المجاني للصوت 10 طلبات يومياً لكل مشروع (مؤكد من رسائل خطأ 429 لدى مطوّرين)، أما حدود نماذج النص (Hydrogen وFlash وFlash-Lite) فتقديرية والحد الرسمي لمشروعك يظهر في AI Studio. الحد يُحسب لكل مشروع Google؛ إن كانت عدة مفاتيح من نفس المشروع فعدّل العدد يدوياً.
           </div>
         </details>
       </div>
@@ -2488,9 +2431,9 @@
       </div>
 
       <div class="setting-row">
-        <label class="setting-label" for="settingTextModel">⚡ نموذج النص والوسوم الذكية</label>
+        <label class="setting-label" for="settingTextModel">⚡ نموذج فهم القصة</label>
         <select id="settingTextModel" class="select" style="direction:ltr; text-align:left;"></select>
-        <span class="setting-hint">الافتراضي: <code>gemini-4-hydrogen</code>. يُستخدم لفهم القصة، ولوسوم Google.</span>
+        <span class="setting-hint">يُستخدم لفهم القصة (ملخص السياق) ولوسوم Google. الافتراضي: <code>gemini-4-hydrogen</code>.</span>
       </div>
 
       <div class="setting-row">
@@ -2508,7 +2451,7 @@
           <option value="google">gemini-4-hydrogen (Google)</option>
           <option value="groq">openai/gpt-oss-120b (Groq)</option>
         </select>
-        <span class="setting-hint">يخص الوسوم فقط (زر الوسوم وزر 🎬 في كل صندوق). «فهم القصة» يبقى على هيدروجين لأن نافذته كبيرة.</span>
+        <span class="setting-hint">يخص الوسوم فقط (زر الوسوم وزر 🎬 في كل صندوق). أما «فهم القصة» فيستخدم نموذج فهم القصة المحدد أعلاه.</span>
       </div>
 
       <div class="setting-row" id="groqKeyRow" style="display:none;">
@@ -2792,7 +2735,9 @@
         { id: 'gemini-3.8-flash-lite-tts', label: 'gemini-3.8-flash-lite-tts (أسرع وأرخص)' }
       ],
       textModels: [
-        { id: 'gemini-4-hydrogen', label: 'gemini-4-hydrogen (التنسيق والوسوم)' }
+        { id: 'gemini-4-hydrogen', label: 'gemini-4-hydrogen (نافذة سياق كبيرة — فهم القصة)' },
+        { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite (خفيف وسريع)' },
+        { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash (متوازن)' }
       ],
       defaultTtsModel: 'gemini-3.8-flash-tts',
       defaultTextModel: 'gemini-4-hydrogen'
@@ -2943,7 +2888,9 @@
     const QUOTA_DEFAULT_LIMITS = {
       'gemini-3.8-flash-tts': 10,
       'gemini-3.8-flash-lite-tts': 10,
-      'gemini-4-hydrogen': 20
+      'gemini-4-hydrogen': 20,
+      'gemini-3.5-flash-lite': 200,
+      'gemini-3.8-flash': 100
     };
 
     const state = {
@@ -5285,53 +5232,6 @@ ${JSON.stringify(numberedPayload)}`;
           triggerBtn.disabled = false;
           triggerBtn.innerHTML = origHtml;
         }
-      }
-    }
-
-    async function runDirectHydrogenStoryTags() {
-      const textarea = document.getElementById('storyInput');
-      const rawText = (textarea?.value || '').trim();
-      if (!rawText) {
-        showToast('اكتب أو الصق القصة أولاً في مربع النص', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('directHydrogenTagsBtn');
-      const density = document.getElementById('directSmartDensity').value || 'heavy';
-      const statusBadge = document.getElementById('directHydrogenStatusBadge');
-      const parsedLines = parseStoryLines(rawText);
-      if (parsedLines.length === 0) return;
-
-      const hadSpeakerPrefixes = state.storyMode === 'multi' && rawText.split(/\r?\n/).some(l => /^[^:：]{1,25}[:：]/.test(l.trim()));
-
-      try {
-        const res = await generateSmartTagsForLines(parsedLines, density, btn);
-        if (!res) return;
-        if (res.totalTagsInserted === 0) {
-          showToast('لم يُضف النموذج وسوماً جديدة — جرّب رفع الكثافة', 'info');
-          return;
-        }
-
-        state.storyUndoSnapshot = rawText;
-        document.getElementById('undoStoryFormatBtn').classList.remove('hidden');
-
-        const rebuiltStory = res.lines.map(line => {
-          if (state.storyMode === 'single' && !hadSpeakerPrefixes) return line.text;
-          return `${line.speaker}: ${line.text}`;
-        }).join('\n');
-
-        textarea.value = rebuiltStory;
-        state.storyText = rebuiltStory;
-        updateStoryCounters();
-        scheduleAutoSave();
-
-        if (statusBadge) {
-          statusBadge.textContent = `✓ أضاف ${state.settings.textModel} عدد ${res.totalTagsInserted} وسماً`;
-          statusBadge.style.color = 'var(--success)';
-        }
-        showToast(`تمت إضافة ${res.totalTagsInserted} وسماً صوتياً بواسطة ${state.settings.textModel}`, 'success');
-      } catch (err) {
-        showToast(`تعذر إضافة الوسوم: ${err.message}`, 'error');
       }
     }
 
@@ -9285,9 +9185,6 @@ Return ONLY valid JSON matching the schema.`;
       document.getElementById('settingPauseSpeaker').value = state.settings.pauseSpeaker;
       document.getElementById('settingPauseSameSpeaker').value = state.settings.pauseSameSpeaker;
       document.getElementById('settingPauseParagraph').value = state.settings.pauseParagraph;
-
-      const headerBadge = document.getElementById('activeTextModelHeaderBadge');
-      if (headerBadge) headerBadge.textContent = `⚡ ${state.settings.textModel}`;
     }
 
     let lastFocusedBeforeModal = null;
@@ -9690,7 +9587,6 @@ Return ONLY valid JSON matching the schema.`;
         showToast('تمت إزالة الوسوم الصوتية المعتمدة فقط مع الحفاظ على بقية النص', 'info');
       });
 
-      document.getElementById('directHydrogenTagsBtn').addEventListener('click', runDirectHydrogenStoryTags);
       document.getElementById('splitStoryBtn').addEventListener('click', splitStoryByMetric);
 
       // الأسلوب الموحد مع Debounce 400ms (1.11)
