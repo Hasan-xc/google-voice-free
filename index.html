@@ -1006,10 +1006,11 @@
     }
 
     .segment-card {
+      position: relative;
       background: var(--bg-surface-2);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 0.75rem;
+      padding: 0.75rem 1.1rem 0.75rem 0.75rem;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
@@ -1131,6 +1132,9 @@
     }
 
     .seg-index {
+      position: absolute;
+      right: -12px;
+      top: calc(50% - 13px);
       width: 26px;
       height: 26px;
       border-radius: 50%;
@@ -1142,6 +1146,8 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      z-index: 6;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
       transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
 
@@ -1333,15 +1339,15 @@
     }
 
     .seg-textarea {
-      min-height: 76px;
-      padding-left: 2.8rem;
+      min-height: 96px;
+      padding-bottom: 2.75rem;
       font-size: 0.86rem;
     }
 
     .floating-gen-group {
       position: absolute;
-      top: 0.42rem;
-      left: 0.42rem;
+      bottom: 0.45rem;
+      right: 0.55rem;
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
@@ -7039,14 +7045,13 @@ Return ONLY valid JSON matching the schema.`;
       }
 
       return `
+        <span class="seg-index ${statusInfo.cls}" title="${escapeHtml(statusInfo.label)}">${idx + 1}</span>
         <div class="segment-top">
           <div class="segment-meta">
             <label class="seg-select-wrap" title="تضمين هذا المقطع في الدمج (وفي «تشغيل من هنا»)">
               <input type="checkbox" class="seg-select-check" data-seg-select="${escapeHtml(seg.id)}" ${seg.selected !== false ? 'checked' : ''} aria-label="تحديد المقطع ${idx + 1} للدمج" />
             </label>
-            <span class="seg-index ${statusInfo.cls}" title="${escapeHtml(statusInfo.label)}">${idx + 1}</span>
             ${voiceSelectorsHtml}
-            <button type="button" class="btn btn-xs btn-accent" data-seg-action="tag-one" data-id="${escapeHtml(seg.id)}" title="يرسل هذا الصندوق فقط + ملخص القصة + تعليمات الوسوم إلى ${escapeHtml(state.settings.textModel)}" ${(isGenerating || seg.taggingBusy) ? 'disabled' : ''}>${seg.taggingBusy ? '⏳ جارٍ الوسم...' : '🎬 وسم'}</button>
             <span class="seg-tag-count-pill" title="عدد الوسوم الصوتية في المقطع">${escapeHtml(formatArabicTagCount(segTagsCount))}</span>
           </div>
 
@@ -7057,6 +7062,7 @@ Return ONLY valid JSON matching the schema.`;
               </svg>
             </button>
             <div id="card_menu_${escapeHtml(seg.id)}" class="card-dots-dropdown hidden" role="menu">
+              <button type="button" class="card-dots-item" data-seg-action="tag-one" data-id="${escapeHtml(seg.id)}" role="menuitem" ${(isGenerating || seg.taggingBusy) ? 'disabled' : ''}>${seg.taggingBusy ? '⏳ جارٍ الوسم...' : '🎬 وسم'}</button>
               <button type="button" class="card-dots-item" data-seg-action="play-from" data-id="${escapeHtml(seg.id)}" role="menuitem">▶️ تشغيل من هنا</button>
               <button type="button" class="card-dots-item" data-seg-action="insert-above" data-id="${escapeHtml(seg.id)}" role="menuitem">⬆️ إضافة صندوق فوق</button>
               <button type="button" class="card-dots-item" data-seg-action="insert-below" data-id="${escapeHtml(seg.id)}" role="menuitem">⬇️ إضافة صندوق أسفل</button>
@@ -7072,7 +7078,7 @@ Return ONLY valid JSON matching the schema.`;
             <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${isGenerating ? 'disabled' : ''}>
               ${isGenerating
                 ? '<span class="spinner"></span>'
-                : '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>'}
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 6.18 21l1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.82 4.73L17.82 21z"/></svg>'}
             </button>
             ${isGenerating ? `
               <button type="button" class="floating-cancel-btn" data-seg-action="cancel" data-id="${escapeHtml(seg.id)}" title="إلغاء التوليد" aria-label="إلغاء توليد المقطع ${idx + 1}">✕</button>
@@ -9810,7 +9816,7 @@ Return ONLY valid JSON matching the schema.`;
         } else if (action === 'insert-above') insertSegmentRelative(id, 'above');
         else if (action === 'insert-below') insertSegmentRelative(id, 'below');
         else if (action === 'delete') { closeAllCardMenus(); deleteSegmentById(id); }
-        else if (action === 'tag-one') runSingleSegmentTags(id);
+        else if (action === 'tag-one') { closeAllCardMenus(); runSingleSegmentTags(id); }
         else if (action === 'compress-mp3') enqueueMp3Conversion(id);
         else if (action === 'generate') generateSingleSegment(id);
         else if (action === 'cancel') cancelSingleSegment(id);
