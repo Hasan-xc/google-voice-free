@@ -1380,7 +1380,8 @@
       position: absolute;
       top: 0.45rem;
       left: 0.55rem;
-      right: 2.95rem;
+      right: 0.55rem;
+      direction: ltr;
       display: flex;
       align-items: center;
       gap: 0.3rem;
@@ -1529,8 +1530,10 @@
     .mini-audio-menu {
       position: absolute;
       top: calc(100% + 8px);
-      left: -4px;
+      right: 0;
+      left: auto;
       min-width: 200px;
+      direction: rtl;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -1542,11 +1545,10 @@
       z-index: 60;
     }
 
-    /* على الشاشات الضيقة: أخفِ المدة الكلية واكتفِ بالوقت الحالي */
+    /* على الشاشات الضيقة: تصغير خط التوقيتات فقط */
     @media (max-width: 420px) {
-      .mini-time-sep,
-      .mini-time-dur {
-        display: none;
+      .mini-time {
+        font-size: 0.6rem;
       }
     }
 
@@ -7132,12 +7134,13 @@ Return ONLY valid JSON matching the schema.`;
             <svg class="mini-icon-play" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20"/></svg>
             <svg class="mini-icon-pause hidden" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
           </button>
+          <span class="mini-time mini-time-cur" dir="ltr">00:00</span>
           <div class="mini-seek-track">
             <div class="mini-seek-fill"></div>
             <div class="mini-seek-thumb"></div>
             <input type="range" class="mini-seek" min="0" max="100" step="0.1" value="0" aria-label="تقدم صوت المقطع ${idx + 1}" />
           </div>
-          <span class="mini-time" dir="ltr"><span class="mini-time-cur">00:00</span><span class="mini-time-sep"> / </span><span class="mini-time-dur">00:00</span></span>
+          <span class="mini-time mini-time-dur" dir="ltr">00:00</span>
           <div class="mini-menu-wrap">
             <button type="button" class="mini-dots" title="خيارات الصوت (تسريع/تنزيل)" aria-label="خيارات صوت المقطع ${idx + 1}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -7152,6 +7155,7 @@ Return ONLY valid JSON matching the schema.`;
 
     function buildMiniAudioMenuHtml(seg, idx) {
       const items = [];
+      items.push(`<button type="button" class="card-dots-item" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" role="menuitem">🔄 إعادة إنشاء الصوت</button>`);
       const rate = Number(seg.rate) === 2 ? 2 : 1;
       items.push(`<button type="button" class="card-dots-item" data-seg-action="toggle-speed" data-id="${escapeHtml(seg.id)}" role="menuitem">${rate === 2 ? '⏪ إرجاع السرعة إلى ×1' : '⏩ تسريع الصوت ×2'}</button>`);
       if (state.settings.mp3Mode !== 'auto' && !seg.mp3Blob) {
@@ -7294,6 +7298,7 @@ Return ONLY valid JSON matching the schema.`;
       const isStale = Boolean(seg.wavBlob && seg.generatedSig && seg.generatedSig !== currentSig);
       const isGenerating = seg.status === 'generating';
       const isQueued = seg.status === 'queued';
+      const hasAudio = Boolean(seg.audioUrl || seg.mp3Url);
       const statusInfo = getSegmentStatusInfo(seg);
       const mp3AreaHtml = renderMp3AreaHtml(seg);
 
@@ -7362,8 +7367,9 @@ Return ONLY valid JSON matching the schema.`;
         <div class="seg-status-slot ${statusBadge ? '' : 'hidden'}" style="margin-bottom:0.35rem;">${statusBadge}</div>
 
         <div class="seg-textarea-wrap">
+          ${(isGenerating || !hasAudio) ? `
           <div class="floating-gen-group">
-            <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${isGenerating ? 'disabled' : ''}>
+            <button type="button" class="floating-gen-btn" data-seg-action="generate" data-id="${escapeHtml(seg.id)}" title="توليد الصوت لهذا المقطع" aria-label="توليد الصوت للمقطع ${idx + 1}" ${(isGenerating || isQueued) ? 'disabled' : ''}>
               ${isGenerating
                 ? '<span class="spinner"></span>'
                 : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27 6.18 21l1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.82 4.73L17.82 21z"/></svg>'}
@@ -7372,7 +7378,8 @@ Return ONLY valid JSON matching the schema.`;
               <button type="button" class="floating-cancel-btn" data-seg-action="cancel" data-id="${escapeHtml(seg.id)}" title="إلغاء التوليد" aria-label="إلغاء توليد المقطع ${idx + 1}">✕</button>
             ` : ''}
           </div>
-          ${(!isGenerating && (seg.audioUrl || seg.mp3Url)) ? renderSegmentAudioBarHtml(seg) : ''}
+          ` : ''}
+          ${(!isGenerating && hasAudio) ? renderSegmentAudioBarHtml(seg) : ''}
           <textarea class="textarea seg-textarea" data-seg-action="text-edit" data-id="${escapeHtml(seg.id)}" aria-label="نص المقطع ${idx + 1}" placeholder="اكتب نص الكلام هنا...">${escapeHtml(seg.text)}</textarea>
         </div>
 
@@ -10098,7 +10105,7 @@ Return ONLY valid JSON matching the schema.`;
         else if (action === 'tag-one') { closeAllCardMenus(); runSingleSegmentTags(id); }
         else if (action === 'compress-mp3') enqueueMp3Conversion(id);
         else if (action === 'toggle-speed') { e.stopPropagation(); toggleMiniAudioSpeed(id); }
-        else if (action === 'generate') generateSingleSegment(id);
+        else if (action === 'generate') { closeAllCardMenus(); generateSingleSegment(id); }
         else if (action === 'cancel') cancelSingleSegment(id);
         else if (action === 'play-from') { closeAllCardMenus(); startPlaylistFromSegmentId(id); }
       });
